@@ -26,7 +26,7 @@ document.getElementById('btnLoginTopo').addEventListener('click', () => {
   }
 });
 
-export function fazerLogin() {
+export async function fazerLogin() {
   const emailOuLogin = document.getElementById('loginUser').value.trim();
   const senha        = document.getElementById('loginPass').value;
   const alerta       = document.getElementById('loginAlert');
@@ -80,23 +80,6 @@ export function fazerLogout() {
   fecharAdmin();
   mostrarToast('Sessão encerrada.', 'success');
 }
-
-
-
-
-
-/* ============================================================
-   admin.js — Painel administrativo completo
-   Trem Mineiro
-============================================================ */
-import { categorias, produtos, usuarios, fornecedores, clientes, pedidos,
-         getEstoque(), movimentos, config, getSessao(), getSessaoCliente(), isAdminCarregado(),
-         setCategorias, setProdutos, setUsuarios, setFornecedores, setClientes,
-         setPedidos, setEstoque, setMovimentos, setConfig, setSessao, setSessaoCliente,
-         getUsuariosComFallback } from './state.js';
-import { persistir, carregarDadosAdmin, salvarManualSupabase } from './db.js';
-import { mostrarToast, renderCardapio, renderCatNav, atualizarWhatsapp, aplicarLogo } from './ui.js';
-
 
 
 /* ============================================================
