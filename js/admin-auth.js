@@ -15,7 +15,7 @@ import {
 import { persistir, carregarDadosAdmin, salvarManualSupabase } from './db.js';
 import { mostrarToast, renderCardapio, renderCatNav, atualizarWhatsapp, aplicarLogo, abrirModal, fecharModal, abrirConfirm } from './ui.js';
 
-================================================
+/* ================================================
    AUTENTICAÇÃO
 ============================================================ */
 document.getElementById('btnLoginTopo').addEventListener('click', () => {
