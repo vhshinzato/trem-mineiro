@@ -13,7 +13,17 @@ import {
   getCategoriasOuPadrao, getProdutosOuPadrao, getUsuariosOuPadrao
 } from './state.js';
 import { persistir, carregarDadosAdmin, salvarManualSupabase } from './db.js';
-import { mostrarToast, renderCardapio, renderCatNav, atualizarWhatsapp, aplicarLogo, abrirModal, fecharModal } from './ui.js';
+import { mostrarToast, renderCardapio, renderCatNav, atualizarWhatsapp, aplicarLogo } from './ui.js';
+
+function abrirModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+
+function fecharModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
 
 /* ================================================
    AUTENTICAÇÃO
