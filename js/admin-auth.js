@@ -13,7 +13,7 @@ import {
   getCategoriasOuPadrao, getProdutosOuPadrao, getUsuariosOuPadrao
 } from './state.js';
 import { persistir, carregarDadosAdmin, salvarManualSupabase } from './db.js';
-import { mostrarToast, renderCardapio, renderCatNav, atualizarWhatsapp, aplicarLogo, abrirModal, fecharModal, abrirConfirm } from './ui.js';
+import { mostrarToast, renderCardapio, renderCatNav, atualizarWhatsapp, aplicarLogo, abrirModal, fecharModal } from './ui.js';
 
 /* ================================================
    AUTENTICAÇÃO
