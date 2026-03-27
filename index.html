@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+<meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2C1810" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Trem Mineiro" />
+  <title>Trem Mineiro — Sabor e Tradição</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <!-- Supabase JS -->
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- OVERLAY DE CARREGAMENTO -->
+<div id="loadingOverlay" style="position:fixed;top:0;right:0;bottom:0;left:0;z-index:9999;background:var(--cafe);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+  <div style="font-size:3rem;">☕</div>
+  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--creme);">Trem Mineiro</div>
+  <div style="display:flex;gap:.4rem;margin-top:.5rem;">
+    <span style="width:8px;height:8px;border-radius:50%;background:var(--ouro);animation:dotPulse 1.2s ease-in-out infinite;"></span>
+    <span style="width:8px;height:8px;border-radius:50%;background:var(--ouro);animation:dotPulse 1.2s ease-in-out .4s infinite;"></span>
+    <span style="width:8px;height:8px;border-radius:50%;background:var(--ouro);animation:dotPulse 1.2s ease-in-out .8s infinite;"></span>
+  </div>
+  <div id="loadingMsg" style="font-size:.8rem;color:rgba(255,255,255,.5);margin-top:.2rem;">Carregando cardápio...</div>
+</div>
+
+<!-- OVERLAY DE CARREGAMENTO -->
+<div id="loadingOverlay" style="position:fixed;top:0;right:0;bottom:0;left:0;z-index:9999;background:var(--cafe);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+  <div style="font-size:3rem;">☕</div>
+  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--creme);">Trem Mineiro</div>
+  <div style="display:flex;gap:.4rem;margin-top:.5rem;">
+    <span style="width:8px;height:8px;border-radius:50%;background:var(--ouro);animation:dotPulse 1.2s ease-in-out infinite;"></span>
+    <span style="width:8px;height:8px;border-radius:50%;background:var(--ouro);animation:dotPulse 1.2s ease-in-out .4s infinite;"></span>
+    <span style="width:8px;height:8px;border-radius:50%;background:var(--ouro);animation:dotPulse 1.2s ease-in-out .8s infinite;"></span>
+  </div>
+  <div id="loadingMsg" style="font-size:.8rem;color:rgba(255,255,255,.5);margin-top:.2rem;">Carregando cardápio...</div>
+</div>
+
+
+<!-- ============================================================
+     ÁREA PÚBLICA
+============================================================ -->
+
+<!-- HEADER -->
+<header id="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon-header" id="logoIconHeader">☕</div>
+      <div class="logo-text">
+        Trem Mineiro
+        <span>Sabor e Tradição</span>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar produto..." autocomplete="off" />
+    </div>
+    <div class="header-actions">
+      <button id="btnClienteArea" onclick="toggleClienteDropdown()">👤 Entrar</button>
+      <button id="btnLoginTopo">⚙ Acesso</button>
+    </div>
+  </div>
+</header>
+
+<!-- DROPDOWN CLIENTE LOGADO -->
+<div class="cliente-dropdown" id="clienteDropdown">
+  <div class="cliente-dropdown-header">
+    <div class="cliente-dropdown-nome" id="dropdownNome">—</div>
+    <div class="cliente-dropdown-sub" id="dropdownSub">Cliente</div>
+  </div>
+  <button class="cliente-dropdown-item" onclick="abrirMeusDados()">✏️ Meus dados</button>
+  <div class="cliente-dropdown-divider"></div>
+  <button class="cliente-dropdown-item sair" onclick="logoutCliente()">↩ Sair</button>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <!-- Slides de fundo (gerados por JS) -->
+  <div id="heroOverlay"></div>
+  <div id="heroDots"></div>
+
+  <div class="hero-logo-wrap" id="heroLogoWrap">
+    <div class="logo-icon" id="logoIcon">☕</div>
+  </div>
+  <div class="hero-badge">Produtos Artesanais</div>
+  <h1>O sabor <em>autêntico</em> de Minas Gerais</h1>
+  <p>Cafés especiais, queijos selecionados, doces de leite e muito mais, direto do coração de Minas.</p>
+</section>
+
+<!-- NAVEGAÇÃO POR CATEGORIAS -->
+<nav id="catNav">
+  <div class="catNav-inner" id="catNavList">
+    <!-- gerado por JS -->
+  </div>
+</nav>
+
+<!-- PRODUTOS -->
+<main id="main">
+  <div id="productSections">
+    <!-- gerado por JS -->
+  </div>
+</main>
+
+<!-- CONTATO / WHATSAPP -->
+<section id="contato">
+  <h2>Faça seu pedido</h2>
+  <p>Clique abaixo para falar conosco pelo WhatsApp e realizar seu pedido.</p>
+  <a id="btnWhatsapp" href="#" target="_blank" class="btn-whatsapp">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.554 4.122 1.523 5.855L0 24l6.29-1.494A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.797 9.797 0 01-5.003-1.37l-.36-.214-3.734.887.93-3.624-.235-.373A9.788 9.788 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+    Pedir pelo WhatsApp
+  </a>
+</section>
+
+<footer>
+  <p>© 2025 Trem Mineiro — Todos os direitos reservados</p>
+</footer>
+
+
+<!-- BOTÃO FLUTUANTE DO CARRINHO -->
+<button id="btnCarrinho" class="hidden" onclick="abrirCarrinho()" title="Ver carrinho">
+  🛒
+  <span class="carrinho-badge" id="carrinhoBadge">0</span>
+</button>
+
+<!-- OVERLAY DO CARRINHO -->
+<div id="carrinhoOverlay" onclick="fecharCarrinho()"></div>
+
+<!-- DRAWER DO CARRINHO -->
+<div id="carrinhoDrawer">
+  <div class="carrinho-header">
+    <div class="carrinho-titulo">🛒 Seu Pedido</div>
+    <button class="carrinho-fechar" onclick="fecharCarrinho()">✕</button>
+  </div>
+  <div class="carrinho-itens" id="carrinhoItens">
+    <!-- gerado por JS -->
+  </div>
+  <div class="carrinho-footer" id="carrinhoFooter" style="display:none;">
+    <div class="carrinho-total-linha">
+      <span class="carrinho-total-label">Total estimado</span>
+      <span class="carrinho-total-valor" id="carrinhoTotal">R$ 0,00</span>
+    </div>
+    <div id="carrinhoBtnWrap"></div>
+    <button class="btn-limpar-carrinho" onclick="limparCarrinho()">Limpar carrinho</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: DETALHE DO PRODUTO (área pública)
+============================================================ -->
+<div class="modal-overlay" id="modalDetalhe">
+  <div class="modal-box" style="padding:0;max-width:600px;">
+    <button class="modal-close" style="z-index:10;background:rgba(44,24,16,.55);color:#fff;position:absolute;top:.8rem;right:.8rem;" onclick="fecharModal('modalDetalhe')">✕</button>
+    <div id="detalheImgWrap"></div>
+    <div class="detalhe-body">
+      <div class="detalhe-cat-tag" id="detalheCat"></div>
+      <div class="detalhe-nome" id="detalheNome"></div>
+      <div class="detalhe-desc" id="detalheDesc"></div>
+      <div class="detalhe-preco" id="detalhePreco"></div>
+      <div class="detalhe-footer">
+        <div class="detalhe-qtd-wrap" id="detalheQtdWrap">
+          <button class="detalhe-qtd-btn" onclick="detalheQtd(-1)">−</button>
+          <span class="detalhe-qtd-num" id="detalheQtdNum">1</span>
+          <button class="detalhe-qtd-btn" onclick="detalheQtd(1)">+</button>
+        </div>
+        <button class="btn-add-cart" id="btnAddCart" onclick="addAoCarrinho()">
+          🛒 Adicionar ao carrinho
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: LOGIN / CADASTRO DO CLIENTE
+============================================================ -->
+<div class="modal-overlay" id="modalClienteAuth">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalClienteAuth')">✕</button>
+
+    <!-- Tabs Login / Cadastro -->
+    <div class="modal-auth-tabs">
+      <button class="modal-auth-tab active" id="tabAuthLogin" onclick="trocarAuthTab('login')">Entrar</button>
+      <button class="modal-auth-tab" id="tabAuthCad" onclick="trocarAuthTab('cadastro')">Criar conta</button>
+    </div>
+
+    <!-- PAINEL: LOGIN -->
+    <div id="painelAuthLogin">
+      <div class="modal-title" style="margin-bottom:1rem;">Bem-vindo de volta!</div>
+      <div id="authLoginAlert"></div>
+      <div class="form-group">
+        <label class="form-label">E-mail *</label>
+        <input type="email" class="form-input" id="authLoginEmail" placeholder="seu@email.com" />
+        <div class="error-msg" id="authLoginEmailErr"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha *</label>
+        <input type="password" class="form-input" id="authLoginSenha" placeholder="Sua senha"
+          onkeydown="if(event.key==='Enter') fazerLoginCliente()" />
+        <div class="error-msg" id="authLoginSenhaErr"></div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="fazerLoginCliente()">Entrar</button>
+      <p style="text-align:center;font-size:.8rem;color:var(--cinza);margin-top:.9rem;">
+        Não tem conta?
+        <button onclick="trocarAuthTab('cadastro')" style="background:none;border:none;color:var(--terra);font-weight:700;cursor:pointer;font-size:.8rem;">Cadastre-se grátis</button>
+      </p>
+    </div>
+
+    <!-- PAINEL: CADASTRO -->
+    <div id="painelAuthCadastro" style="display:none;">
+      <div class="modal-title" style="margin-bottom:1rem;">Criar minha conta</div>
+      <div id="authCadAlert"></div>
+      <div class="form-group">
+        <label class="form-label">Nome completo *</label>
+        <input type="text" class="form-input" id="authCadNome" placeholder="Maria das Graças Oliveira" />
+        <div class="error-msg" id="authCadNomeErr"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail *</label>
+        <input type="email" class="form-input" id="authCadEmail" placeholder="seu@email.com" />
+        <div class="error-msg" id="authCadEmailErr"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha *</label>
+        <input type="password" class="form-input" id="authCadSenha" placeholder="Mínimo 6 caracteres" />
+        <div class="error-msg" id="authCadSenhaErr"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div class="form-group">
+          <label class="form-label">Telefone / WhatsApp</label>
+          <input type="text" class="form-input" id="authCadTel" placeholder="(31) 99999-0000" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data de aniversário</label>
+          <input type="date" class="form-input" id="authCadAniv" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Endereço</label>
+        <input type="text" class="form-input" id="authCadEnd" placeholder="Rua, número, bairro, cidade — MG" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="cadastrarCliente()">Criar conta</button>
+      <p style="text-align:center;font-size:.8rem;color:var(--cinza);margin-top:.9rem;">
+        Já tem conta?
+        <button onclick="trocarAuthTab('login')" style="background:none;border:none;color:var(--terra);font-weight:700;cursor:pointer;font-size:.8rem;">Entrar</button>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: MEUS DADOS (cliente logado editando o próprio perfil) -->
+<div class="modal-overlay" id="modalMeusDados">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalMeusDados')">✕</button>
+    <div class="modal-title">Meus Dados</div>
+    <div id="meusDadosAlert"></div>
+    <div class="form-group">
+      <label class="form-label">Nome completo *</label>
+      <input type="text" class="form-input" id="mdNome" />
+      <div class="error-msg" id="mdNomeErr"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+      <div class="form-group">
+        <label class="form-label">Telefone / WhatsApp</label>
+        <input type="text" class="form-input" id="mdTel" placeholder="(31) 99999-0000" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data de aniversário</label>
+        <input type="date" class="form-input" id="mdAniv" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Endereço</label>
+      <input type="text" class="form-input" id="mdEnd" />
+    </div>
+    <div style="height:1px;background:var(--creme-dark);margin:.4rem 0 1rem;"></div>
+    <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--cinza);margin-bottom:.7rem;">Alterar senha</p>
+    <div class="form-group">
+      <label class="form-label">Nova senha <span style="font-weight:400;text-transform:none;letter-spacing:0;">(deixe em branco para manter)</span></label>
+      <input type="password" class="form-input" id="mdSenha" placeholder="Nova senha" />
+    </div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalMeusDados')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarMeusDados()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL DE LOGIN
+============================================================ -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('loginModal')">✕</button>
+    <div class="modal-title">🔐 Acesso Administrativo</div>
+    <div id="loginAlert"></div>
+    <div class="form-group">
+      <label class="form-label">Login</label>
+      <input type="text" class="form-input" id="loginUser" placeholder="Seu login" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input type="password" class="form-input" id="loginPass" placeholder="Sua senha" />
+    </div>
+    <button class="btn btn-primary btn-full" onclick="fazerLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAINEL ADMINISTRATIVO
+============================================================ -->
+<div id="adminPanel">
+  <!-- Topbar Admin -->
+  <div class="admin-topbar">
+    <div class="admin-topbar-inner">
+      <div class="admin-brand">⚙ Painel Administrativo — Trem Mineiro</div>
+      <div class="admin-user-info">
+        <span id="adminUserName" class="admin-username"></span>
+        <span id="adminBadgeRole" class="badge-role"></span>
+        <button class="btn btn-outline btn-sm" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.3);" onclick="fazerLogout()">Sair</button>
+        <button class="btn btn-secondary btn-sm" onclick="voltarCardapio()">← Cardápio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Abas -->
+  <div class="admin-tabs">
+    <div class="admin-tabs-inner">
+      <button class="admin-tab admin-tab-pedidos" data-tab="tabPedidos" onclick="abrirAba('tabPedidos', this)">🛒 Pedidos<span id="pedidosBadgeTab" style="display:none;background:var(--terra);color:#fff;font-size:.65rem;font-weight:800;padding:.1rem .42rem;border-radius:20px;margin-left:.4rem;vertical-align:middle;"></span></button>
+      <button class="admin-tab admin-tab-relatorios" data-tab="tabRelatorios" onclick="abrirAbaRelatorios(this)">📊 Relatórios</button>
+      <button class="admin-tab active" data-tab="tabCategorias" onclick="abrirAba('tabCategorias', this)">Categorias</button>
+      <button class="admin-tab" data-tab="tabProdutos" onclick="abrirAba('tabProdutos', this)">Produtos</button>
+      <button class="admin-tab" data-tab="tabEstoque" onclick="abrirAba('tabEstoque', this)">Estoque</button>
+      <button class="admin-tab admin-tab-fornecedores" data-tab="tabFornecedores" onclick="abrirAba('tabFornecedores', this)">Fornecedores</button>
+      <button class="admin-tab admin-tab-clientes" data-tab="tabClientes" onclick="abrirAba('tabClientes', this)">Clientes</button>
+      <button class="admin-tab admin-tab-whatsapp" data-tab="tabWhatsapp" onclick="abrirAba('tabWhatsapp', this)">Configurações</button>
+      <button class="admin-tab admin-tab-usuarios" data-tab="tabUsuarios" onclick="abrirAba('tabUsuarios', this)">Usuários</button>
+    </div>
+  </div>
+
+  <!-- Conteúdo das abas -->
+  <div class="admin-content">
+
+
+
+    <!-- ABA: PEDIDOS -->
+    <div id="tabPedidos" class="tab-panel">
+      <div class="admin-section-header">
+        <div class="admin-section-title">Pedidos Recebidos</div>
+        <button class="btn btn-outline btn-sm" onclick="renderTabelaPedidos()">↻ Atualizar</button>
+      </div>
+
+      <!-- Filtros de status -->
+      <div class="pedidos-filtros">
+        <button class="estoque-filtro-btn active" onclick="filtrarPedidos('todos', this)">Todos</button>
+        <button class="estoque-filtro-btn" onclick="filtrarPedidos('pendente', this)">⏳ Pendentes</button>
+        <button class="estoque-filtro-btn" onclick="filtrarPedidos('confirmado', this)">✅ Confirmados</button>
+        <button class="estoque-filtro-btn" onclick="filtrarPedidos('cancelado', this)">✕ Cancelados</button>
+      </div>
+
+      <div id="pedidosLista"></div>
+    </div><!-- /tabPedidos -->
+
+    <!-- ABA: RELATÓRIOS -->
+    <div id="tabRelatorios" class="tab-panel">
+
+      <!-- Filtro de período -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;margin-bottom:1.6rem;">
+        <div class="admin-section-title">Visão Geral do Negócio</div>
+        <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+          <button class="rel-period-btn" onclick="setAtalho(7,   this)">7 dias</button>
+          <button class="rel-period-btn active" onclick="setAtalho(30,  this)">30 dias</button>
+          <button class="rel-period-btn" onclick="setAtalho(90,  this)">90 dias</button>
+          <button class="rel-period-btn" onclick="setAtalho(365, this)">12 meses</button>
+          <button class="rel-period-btn" onclick="setAtalho(0,   this)">Tudo</button>
+          <button class="rel-period-btn" id="btnIntervalo" onclick="toggleIntervalo(this)">📅 Intervalo</button>
+        </div>
+      </div>
+
+      <!-- Painel de intervalo (oculto por padrão) -->
+      <div id="painelIntervaloRel" style="display:none;background:var(--branco);border-radius:var(--radius);box-shadow:0 2px 10px var(--shadow);padding:.9rem 1.2rem;margin-bottom:1.4rem;">
+        <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;">
+          <span style="font-size:.8rem;font-weight:700;color:var(--cafe-soft);">De</span>
+          <input type="date" class="rel-date-input" id="filtroInicio" onchange="aplicarFiltroIntervalo()" />
+          <span style="font-size:.8rem;font-weight:700;color:var(--cafe-soft);">até</span>
+          <input type="date" class="rel-date-input" id="filtroFim" onchange="aplicarFiltroIntervalo()" />
+          <div class="rel-periodo-tag" id="relPeriodoTag" style="margin-left:.4rem;"><strong>Últimos 30 dias</strong></div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="rel-grid" id="relKpis"></div>
+
+      <!-- Gráfico de vendas — largura total -->
+      <div class="rel-card" style="margin-bottom:1.2rem;">
+        <div class="rel-card-header">
+          <div class="rel-card-title">📈 Vendas por período</div>
+        </div>
+        <div class="rel-card-body">
+          <canvas id="chartVendas" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- Linha 1: Estoque + Produtos mais vendidos -->
+      <div class="rel-row">
+        <div class="rel-card">
+          <div class="rel-card-header">
+            <div class="rel-card-title">📦 Status do Estoque</div>
+          </div>
+          <div class="rel-card-body">
+            <div class="rel-donut-wrap">
+              <canvas id="chartEstoque" width="140" height="140" style="flex-shrink:0;"></canvas>
+              <div class="rel-legend" id="legendEstoque"></div>
+            </div>
+          </div>
+        </div>
+        <div class="rel-card">
+          <div class="rel-card-header">
+            <div class="rel-card-title">🏆 Produtos mais vendidos</div>
+          </div>
+          <div class="rel-card-body" id="relTopProdutos"></div>
+        </div>
+      </div>
+
+      <!-- Linha 2: Melhores clientes + Entradas de estoque -->
+      <div class="rel-row">
+        <div class="rel-card">
+          <div class="rel-card-header">
+            <div class="rel-card-title">⭐ Melhores clientes</div>
+          </div>
+          <div class="rel-card-body" id="relTopClientes"></div>
+        </div>
+        <div class="rel-card">
+          <div class="rel-card-header">
+            <div class="rel-card-title">🔄 Últimas entradas de estoque</div>
+          </div>
+          <div class="rel-card-body" id="relEntradasEstoque"></div>
+        </div>
+      </div>
+
+      <!-- Linha 3: Aniversariantes + Fornecedores -->
+      <div class="rel-row">
+        <div class="rel-card">
+          <div class="rel-card-header">
+            <div class="rel-card-title">🎂 Aniversariantes do mês</div>
+          </div>
+          <div class="rel-card-body" id="relAniversariantes"></div>
+        </div>
+        <div class="rel-card">
+          <div class="rel-card-header">
+            <div class="rel-card-title">🏭 Volume de compras por fornecedor</div>
+          </div>
+          <div class="rel-card-body" id="relFornecedores"></div>
+        </div>
+      </div>
+
+    </div><!-- /tabRelatorios -->
+
+    <!-- ABA: CATEGORIAS -->
+    <div id="tabCategorias" class="tab-panel active">
+      <div class="admin-section-header">
+        <div class="admin-section-title">Categorias</div>
+        <button class="btn btn-primary" id="btnNovaCat">+ Nova Categoria</button>
+      </div>
+      <div class="drag-hint">
+        <span>⠿</span> Arraste as linhas pela alça para reordenar
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table" id="tabelaCategorias">
+          <thead>
+            <tr>
+              <th style="width:40px;"></th>
+              <th>#</th>
+              <th>Nome</th>
+              <th>Produtos</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="catTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ABA: PRODUTOS -->
+    <div id="tabProdutos" class="tab-panel">
+      <div class="admin-section-header">
+        <div class="admin-section-title">Produtos</div>
+        <button class="btn btn-primary" onclick="abrirModalProduto(null)">+ Novo Produto</button>
+      </div>
+      <!-- Filtro de categoria -->
+      <div class="form-group" style="max-width:280px;margin-bottom:1.2rem;">
+        <select class="form-select" id="filtroCategoriaProd" onchange="renderTabelaProdutos()">
+          <option value="">Todas as categorias</option>
+        </select>
+      </div>
+      <div class="drag-hint">
+        <span>⠿</span> Arraste as linhas pela alça para reordenar
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table" id="tabelaProdutos">
+          <thead>
+            <tr>
+              <th style="width:40px;"></th>
+              <th>Imagem</th>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Preço</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="prodTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ABA: ESTOQUE -->
+    <div id="tabEstoque" class="tab-panel">
+
+      <!-- Cards de resumo -->
+      <div class="estoque-resumo" id="estoqueResumo">
+        <!-- gerado por JS -->
+      </div>
+
+      <!-- Controles superiores -->
+      <div class="admin-section-header" style="margin-top:1.6rem;">
+        <div class="admin-section-title">Controle de Estoque</div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="abrirModalMovimento('entrada')">＋ Entrada</button>
+          <button class="btn btn-outline btn-sm" onclick="abrirModalMovimento('saida')">－ Saída</button>
+          <button class="btn btn-outline btn-sm" onclick="abrirModalMovimento('ajuste')">✎ Ajuste</button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center;">
+        <div style="flex:1;min-width:160px;max-width:260px;">
+          <select class="form-select" id="filtroEstoqueCat" onchange="renderTabelaEstoque()">
+            <option value="">Todas as categorias</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:.4rem;">
+          <button class="estoque-filtro-btn active" data-status="" onclick="filtroEstoqueStatus(this,'')">Todos</button>
+          <button class="estoque-filtro-btn" data-status="ok"      onclick="filtroEstoqueStatus(this,'ok')">✅ Normal</button>
+          <button class="estoque-filtro-btn" data-status="baixo"   onclick="filtroEstoqueStatus(this,'baixo')">⚠️ Baixo</button>
+          <button class="estoque-filtro-btn" data-status="zero"    onclick="filtroEstoqueStatus(this,'zero')">🔴 Esgotado</button>
+          <button class="estoque-filtro-btn" data-status="excesso" onclick="filtroEstoqueStatus(this,'excesso')">🔵 Excedido</button>
+        </div>
+      </div>
+
+      <!-- Tabela de estoque -->
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Estoque atual</th>
+              <th>Mínimo</th>
+              <th>Máximo</th>
+              <th>Status</th>
+              <th>Ajuste rápido</th>
+            </tr>
+          </thead>
+          <tbody id="estoqueTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Histórico de movimentações -->
+      <div style="margin-top:2.5rem;">
+        <div class="admin-section-header">
+          <div class="admin-section-title" style="font-size:1.15rem;">Histórico de Movimentações</div>
+          <div style="display:flex;gap:.6rem;align-items:center;">
+            <select class="form-select" id="filtroHistProd" onchange="renderHistorico()" style="max-width:220px;font-size:.82rem;padding:.38rem .7rem;">
+              <option value="">Todos os produtos</option>
+            </select>
+            <button class="btn btn-danger btn-sm" onclick="confirmarLimparHistorico()">🗑 Limpar</button>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Produto</th>
+                <th>Tipo</th>
+                <th>Qtd</th>
+                <th>Fornecedor</th>
+                <th>Data compra</th>
+                <th>Vlr. unit.</th>
+                <th>Obs.</th>
+              </tr>
+            </thead>
+            <tbody id="historicoTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /tabEstoque -->
+
+
+    <!-- ABA: FORNECEDORES -->
+    <div id="tabFornecedores" class="tab-panel">
+      <div class="admin-section-header">
+        <div class="admin-section-title">Fornecedores</div>
+        <button class="btn btn-primary" onclick="abrirModalFornecedor(null)">+ Novo Fornecedor</button>
+      </div>
+
+      <!-- Busca -->
+      <div class="form-group" style="max-width:340px;margin-bottom:1.4rem;position:relative;">
+        <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--cinza);pointer-events:none;">🔍</span>
+        <input type="text" class="form-input" id="buscaFornecedor"
+          placeholder="Buscar por nome, produto ou contato…"
+          oninput="renderTabelaFornecedores()"
+          style="padding-left:2.2rem;" />
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th>Endereço</th>
+              <th>Produtos fornecidos</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="fornTableBody"></tbody>
+        </table>
+      </div>
+    </div><!-- /tabFornecedores -->
+
+
+    <!-- ABA: CLIENTES -->
+    <div id="tabClientes" class="tab-panel">
+      <div class="admin-section-header">
+        <div class="admin-section-title">Clientes</div>
+        <button class="btn btn-primary" onclick="abrirModalCliente(null)">+ Novo Cliente</button>
+      </div>
+
+      <!-- Busca + filtro aniversariantes -->
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1.4rem;">
+        <div style="flex:1;min-width:220px;max-width:360px;position:relative;">
+          <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--cinza);pointer-events:none;">🔍</span>
+          <input type="text" class="form-input" id="buscaCliente"
+            placeholder="Buscar por nome, telefone ou e-mail…"
+            oninput="renderTabelaClientes()"
+            style="padding-left:2.2rem;" />
+        </div>
+        <button class="estoque-filtro-btn" id="btnFiltroAniv" onclick="toggleFiltroAniversario(this)">🎂 Aniversariantes do mês</button>
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nome</th>
+              <th>Aniversário</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th>Endereço</th>
+              <th>Compras</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="clienteTableBody"></tbody>
+        </table>
+      </div>
+    </div><!-- /tabClientes -->
+
+    <!-- ABA: WHATSAPP -->
+    <div id="tabWhatsapp" class="tab-panel">
+      <div class="admin-section-title" style="margin-bottom:1.6rem;">Configurações</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;max-width:780px;">
+
+        <!-- Card: Logo -->
+        <div style="background:var(--branco);padding:1.8rem;border-radius:var(--radius);box-shadow:0 2px 10px var(--shadow);">
+          <p style="font-family:var(--font-serif);font-size:1.05rem;font-weight:800;color:var(--cafe);margin-bottom:1.2rem;">🖼️ Logo da marca</p>
+
+          <!-- Preview atual -->
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;">
+            <div id="logoPreviewAdmin" style="height:56px;max-width:180px;background:transparent;display:flex;align-items:center;justify-content:flex-start;font-size:2rem;overflow:hidden;flex-shrink:0;border:2px dashed var(--creme-dark);border-radius:var(--radius-sm);padding:.3rem .5rem;">
+              ☕
+            </div>
+            <div>
+              <p style="font-size:.82rem;color:var(--cafe);font-weight:700;">Logo atual</p>
+              <p style="font-size:.74rem;color:var(--cinza);margin-top:.15rem;">Aparece no header do cardápio</p>
+            </div>
+          </div>
+
+          <!-- Upload -->
+          <label class="upload-drop-area" for="inputLogoFile" style="margin-bottom:.6rem;">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">Clique ou arraste a logo aqui</div>
+            <div class="upload-hint">JPG, PNG, WEBP — máx. 2 MB · Quadrada recomendada</div>
+          </label>
+          <input type="file" id="inputLogoFile" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)" />
+          <div id="logoFileName" style="font-size:.75rem;color:var(--sucesso);font-weight:700;min-height:1.1em;margin-bottom:.8rem;"></div>
+
+          <div style="display:flex;gap:.6rem;">
+            <button class="btn btn-primary btn-sm" onclick="salvarLogo()">Salvar logo</button>
+            <button class="btn btn-danger btn-sm" onclick="removerLogo()" id="btnRemoverLogo" style="display:none;">Remover</button>
+          </div>
+        </div>
+
+        <!-- Card: WhatsApp -->
+        <div style="background:var(--branco);padding:1.8rem;border-radius:var(--radius);box-shadow:0 2px 10px var(--shadow);">
+          <p style="font-family:var(--font-serif);font-size:1.05rem;font-weight:800;color:var(--cafe);margin-bottom:1.2rem;">📱 WhatsApp</p>
+          <div class="form-group">
+            <label class="form-label">Número do WhatsApp</label>
+            <input type="text" class="form-input" id="inputWhatsapp" placeholder="Ex: 5531999990000" />
+            <p style="font-size:.78rem;color:var(--cinza);margin-top:.4rem;">Formato internacional sem espaços. Ex: 5531999990000</p>
+          </div>
+          <button class="btn btn-primary" onclick="salvarWhatsapp()">Salvar número</button>
+        </div>
+
+
+        <!-- Card: Hero / Carrossel -->
+        <div style="background:var(--branco);padding:1.8rem;border-radius:var(--radius);box-shadow:0 2px 10px var(--shadow);grid-column:1/-1;">
+          <p style="font-family:var(--font-serif);font-size:1.05rem;font-weight:800;color:var(--cafe);margin-bottom:.3rem;">🎬 Hero — Carrossel de imagens e vídeos</p>
+          <p style="font-size:.78rem;color:var(--cinza);margin-bottom:1.2rem;">Adicione imagens (upload ou URL) e vídeos (URL .mp4) que aparecerão no fundo do banner principal. Use as setas para reordenar.</p>
+
+          <!-- Adicionar mídia -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">
+
+            <!-- Imagem por upload -->
+            <div style="background:var(--creme);border-radius:var(--radius-sm);padding:1rem;">
+              <p style="font-size:.76rem;font-weight:700;color:var(--cafe-soft);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em;">📷 Imagem (arquivo)</p>
+              <label class="upload-drop-area" for="heroImgFile" style="padding:.8rem;">
+                <div class="upload-icon" style="font-size:1.4rem;">📷</div>
+                <div class="upload-text" style="font-size:.8rem;">Clique ou arraste</div>
+                <div class="upload-hint">JPG, PNG, WEBP — máx. 5 MB</div>
+              </label>
+              <input type="file" id="heroImgFile" accept="image/*" style="display:none;" onchange="adicionarHeroImagem(this)" />
+            </div>
+
+            <!-- Imagem por URL ou vídeo MP4 -->
+            <div style="background:var(--creme);border-radius:var(--radius-sm);padding:1rem;">
+              <p style="font-size:.76rem;font-weight:700;color:var(--cafe-soft);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em;">🔗 URL (imagem ou vídeo .mp4)</p>
+              <input type="text" class="form-input" id="heroUrlInput"
+                placeholder="https://exemplo.com/foto.jpg ou video.mp4"
+                style="margin-bottom:.6rem;font-size:.82rem;" />
+              <input type="text" class="form-input" id="heroUrlTitulo"
+                placeholder="Título (opcional)"
+                style="margin-bottom:.6rem;font-size:.82rem;" />
+              <button class="btn btn-primary btn-sm" onclick="adicionarHeroUrl()">+ Adicionar</button>
+            </div>
+          </div>
+
+          <!-- Lista de mídias -->
+          <div id="heroMediaLista">
+            <div style="text-align:center;color:var(--cinza);font-size:.85rem;padding:1.5rem;">Nenhuma mídia adicionada ainda.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ABA: USUÁRIOS -->
+    <div id="tabUsuarios" class="tab-panel">
+      <div class="admin-section-header">
+        <div class="admin-section-title">Usuários</div>
+        <button class="btn btn-primary" onclick="abrirModalUsuario(null)">+ Novo Usuário</button>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nome</th>
+              <th>Login</th>
+              <th>Perfil</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /admin-content -->
+</div><!-- /adminPanel -->
+
+<!-- ============================================================
+     MODAL: CATEGORIA
+============================================================ -->
+<div class="modal-overlay" id="modalCategoria">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalCategoria')">✕</button>
+    <div class="modal-title" id="modalCatTitulo">Nova Categoria</div>
+    <div id="catAlert"></div>
+    <input type="hidden" id="catEditId" />
+    <div class="form-group">
+      <label class="form-label">Nome da Categoria *</label>
+      <input type="text" class="form-input" id="catNome" placeholder="Ex: Queijos Artesanais" />
+      <div class="error-msg" id="catNomeErr"></div>
+    </div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalCategoria')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCategoria()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PRODUTO
+============================================================ -->
+<div class="modal-overlay" id="modalProduto">
+  <div class="modal-box large">
+    <button class="modal-close" onclick="fecharModal('modalProduto')">✕</button>
+    <div class="modal-title" id="modalProdTitulo">Novo Produto</div>
+    <div id="prodAlert"></div>
+    <input type="hidden" id="prodEditId" />
+    <div class="form-group">
+      <label class="form-label">Categoria *</label>
+      <select class="form-select" id="prodCategoria">
+        <option value="">Selecione uma categoria</option>
+      </select>
+      <div class="error-msg" id="prodCategoriaErr"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nome do Produto *</label>
+      <input type="text" class="form-input" id="prodNome" placeholder="Ex: Pão de Queijo Premium" />
+      <div class="error-msg" id="prodNomeErr"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descrição *</label>
+      <textarea class="form-textarea" id="prodDesc" placeholder="Descreva o produto brevemente..."></textarea>
+      <div class="error-msg" id="prodDescErr"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Preço (R$) *</label>
+      <input type="text" class="form-input" id="prodPreco" placeholder="0,00" oninput="mascaraPreco(this)" />
+      <div class="error-msg" id="prodPrecoErr"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Imagem do Produto</label>
+
+      <!-- Seletor de modo de imagem -->
+      <div class="img-source-tabs" id="imgSourceTabs">
+        <button type="button" class="img-tab active" data-tab="url" onclick="trocarAbaImagem('url', this)">🔗 URL</button>
+        <button type="button" class="img-tab" data-tab="upload" onclick="trocarAbaImagem('upload', this)">📁 Arquivo</button>
+      </div>
+
+      <!-- Painel URL -->
+      <div id="imgPanelUrl" class="img-panel">
+        <input type="text" class="form-input" id="prodImagem" placeholder="https://exemplo.com/imagem.jpg" oninput="previewImagem()" />
+      </div>
+
+      <!-- Painel Upload -->
+      <div id="imgPanelUpload" class="img-panel" style="display:none;">
+        <label class="upload-drop-area" id="uploadDropArea" for="prodImagemFile">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Clique ou arraste uma imagem aqui</div>
+          <div class="upload-hint">JPG, PNG, WEBP, GIF — máx. 5 MB</div>
+        </label>
+        <input type="file" id="prodImagemFile" accept="image/*" style="display:none;" onchange="handleFileUpload(this)" />
+        <div id="uploadFileName" class="upload-file-name"></div>
+      </div>
+
+      <!-- Preview unificado -->
+      <div class="img-preview-wrap" id="imgPreviewWrap">
+        <span>Sem imagem</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalProduto')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarProduto()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: USUÁRIO
+============================================================ -->
+<div class="modal-overlay" id="modalUsuario">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalUsuario')">✕</button>
+    <div class="modal-title" id="modalUserTitulo">Novo Usuário</div>
+    <div id="userAlert"></div>
+    <input type="hidden" id="userEditId" />
+    <div class="form-group">
+      <label class="form-label">Nome *</label>
+      <input type="text" class="form-input" id="userNome" placeholder="Nome completo" />
+      <div class="error-msg" id="userNomeErr"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Login *</label>
+      <input type="text" class="form-input" id="userLogin" placeholder="login de acesso" />
+      <div class="error-msg" id="userLoginErr"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha *</label>
+      <input type="password" class="form-input" id="userSenha" placeholder="Senha" />
+      <div class="error-msg" id="userSenhaErr"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Perfil *</label>
+      <select class="form-select" id="userPerfil">
+        <option value="funcionario">Funcionário</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalUsuario')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarUsuario()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: MOVIMENTAÇÃO DE ESTOQUE
+============================================================ -->
+<div class="modal-overlay" id="modalMovimento">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalMovimento')">✕</button>
+    <div class="modal-title" id="modalMovTitulo">Movimentação</div>
+    <div id="movAlert"></div>
+    <input type="hidden" id="movTipo" />
+
+    <div class="form-group">
+      <label class="form-label">Produto *</label>
+      <select class="form-select" id="movProduto">
+        <option value="">Selecione um produto</option>
+      </select>
+      <div class="error-msg" id="movProdutoErr"></div>
+    </div>
+    <div class="form-group" id="movQtdGroup">
+      <label class="form-label" id="movQtdLabel">Quantidade *</label>
+      <input type="number" class="form-input" id="movQtd" min="0" placeholder="0" />
+      <div class="error-msg" id="movQtdErr"></div>
+    </div>
+
+    <!-- Campos exclusivos de ENTRADA -->
+    <div id="movCamposEntrada" style="display:none;">
+      <div style="height:1px;background:var(--creme-dark);margin:.6rem 0 1rem;"></div>
+      <p style="font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--cinza);margin-bottom:.8rem;">Dados da compra</p>
+      <div class="form-group">
+        <label class="form-label">Fornecedor</label>
+        <select class="form-select" id="movFornecedorSel" style="margin-bottom:.45rem;" onchange="sincronizarFornecedorTexto()">
+          <option value="">— selecionar da lista —</option>
+        </select>
+        <input type="text" class="form-input" id="movFornecedor" placeholder="Ou digite livremente…" style="font-size:.83rem;" />
+        <p style="font-size:.72rem;color:var(--cinza);margin-top:.25rem;">Selecione um cadastrado ou digite diretamente.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Data da compra</label>
+          <input type="date" class="form-input" id="movDataCompra" />
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Valor unitário (R$)</label>
+          <input type="text" class="form-input" id="movValorUnit" placeholder="0,00" oninput="mascaraPreco(this)" />
+        </div>
+      </div>
+      <div style="height:1px;background:var(--creme-dark);margin:1rem 0 .6rem;"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Observação</label>
+      <input type="text" class="form-input" id="movObs" placeholder="Ex: Lote 2025-01, reposição mensal…" />
+    </div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalMovimento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarMovimento()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: FORNECEDOR
+============================================================ -->
+<div class="modal-overlay" id="modalFornecedor">
+  <div class="modal-box large">
+    <button class="modal-close" onclick="fecharModal('modalFornecedor')">✕</button>
+    <div class="modal-title" id="modalFornTitulo">Novo Fornecedor</div>
+    <input type="hidden" id="fornEditId" />
+
+    <div class="form-group">
+      <label class="form-label">Nome / Razão Social *</label>
+      <input type="text" class="form-input" id="fornNome" placeholder="Ex: Laticínios Canastra Ltda." />
+      <div class="error-msg" id="fornNomeErr"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+      <div class="form-group">
+        <label class="form-label">Telefone / WhatsApp</label>
+        <input type="text" class="form-input" id="fornTelefone" placeholder="(31) 99999-0000" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input type="email" class="form-input" id="fornEmail" placeholder="contato@fornecedor.com.br" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Endereço</label>
+      <input type="text" class="form-input" id="fornEndereco" placeholder="Rua, número, bairro, cidade — MG" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tipos de produtos fornecidos</label>
+      <textarea class="form-textarea" id="fornProdutos" placeholder="Ex: Queijos artesanais, doces de leite, cafés especiais…" style="min-height:70px;"></textarea>
+      <p style="font-size:.74rem;color:var(--cinza);margin-top:.3rem;">Descreva livremente as categorias ou produtos que este fornecedor oferece.</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Observações</label>
+      <textarea class="form-textarea" id="fornObs" placeholder="Condições de pagamento, prazo de entrega, contato preferencial…" style="min-height:60px;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalFornecedor')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarFornecedor()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: CLIENTE
+============================================================ -->
+<div class="modal-overlay" id="modalCliente">
+  <div class="modal-box large">
+    <button class="modal-close" onclick="fecharModal('modalCliente')">✕</button>
+    <div class="modal-title" id="modalClienteTitulo">Novo Cliente</div>
+    <input type="hidden" id="clienteEditId" />
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label">Nome completo *</label>
+        <input type="text" class="form-input" id="clienteNome" placeholder="Ex: Maria das Graças Oliveira" />
+        <div class="error-msg" id="clienteNomeErr"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data de aniversário</label>
+        <input type="date" class="form-input" id="clienteAniversario" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefone / WhatsApp</label>
+        <input type="text" class="form-input" id="clienteTelefone" placeholder="(31) 99999-0000" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input type="email" class="form-input" id="clienteEmail" placeholder="cliente@email.com" />
+      </div>
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label">Endereço</label>
+        <input type="text" class="form-input" id="clienteEndereco" placeholder="Rua, número, bairro, cidade — MG" />
+      </div>
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label">Observações</label>
+        <textarea class="form-textarea" id="clienteObs" placeholder="Preferências, restrições, como conheceu a loja…" style="min-height:60px;"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalCliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCliente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: HISTÓRICO DE COMPRAS DO CLIENTE
+============================================================ -->
+<div class="modal-overlay" id="modalHistoricoCliente">
+  <div class="modal-box" style="max-width:680px;">
+    <button class="modal-close" onclick="fecharModal('modalHistoricoCliente')">✕</button>
+    <div class="modal-title" id="modalHistClienteTitulo">Histórico de Compras</div>
+    <div id="modalHistClienteResumo" style="display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.2rem;"></div>
+
+    <!-- Form adicionar compra -->
+    <div style="background:var(--creme);border-radius:var(--radius-sm);padding:1rem 1.1rem;margin-bottom:1.2rem;border:1.5px solid var(--creme-dark);">
+      <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--cinza);margin-bottom:.7rem;">Registrar nova compra</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Data *</label>
+          <input type="date" class="form-input" id="compraData" />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Valor total (R$) *</label>
+          <input type="text" class="form-input" id="compraValor" placeholder="0,00" oninput="mascaraPreco(this)" />
+        </div>
+        <div class="form-group" style="margin:0;grid-column:1/-1;">
+          <label class="form-label">Produtos / descrição</label>
+          <input type="text" class="form-input" id="compraProdutos" placeholder="Ex: Queijo Canastra, Café Especial, Kit Gourmet…" />
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:.7rem;">
+        <button class="btn btn-primary btn-sm" onclick="adicionarCompra()">+ Registrar</button>
+      </div>
+    </div>
+
+    <!-- Lista de compras -->
+    <div id="listaComprasCliente" style="max-height:280px;overflow-y:auto;"></div>
+
+    <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalHistoricoCliente')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: CONFIRMAÇÃO DE PEDIDO COM DESCONTO
+============================================================ -->
+<div class="modal-overlay" id="modalConfPedido">
+  <div class="modal-box" style="max-width:480px;">
+    <button class="modal-close" onclick="fecharModal('modalConfPedido')">✕</button>
+    <div class="modal-title">✅ Confirmar Pedido</div>
+
+    <!-- Cabeçalho do pedido -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;">
+      <span id="confPedNumero" style="font-family:var(--font-serif);font-weight:800;font-size:1rem;color:var(--cafe);"></span>
+      <span id="confPedCliente" style="font-size:.82rem;color:var(--cafe-soft);"></span>
+    </div>
+
+    <!-- Lista de itens -->
+    <div class="conf-pedido-itens" id="confPedItens"></div>
+
+    <!-- Desconto -->
+    <div class="form-group" style="margin-bottom:.6rem;">
+      <label class="form-label">Desconto <span style="font-weight:400;text-transform:none;letter-spacing:0;">(opcional)</span></label>
+      <div class="desconto-wrap">
+        <div style="display:flex;gap:.3rem;">
+          <button class="desconto-tipo-btn active" id="btnDescontoReais" onclick="setDescontoTipo('reais')">R$</button>
+          <button class="desconto-tipo-btn" id="btnDescontoPct" onclick="setDescontoTipo('pct')">%</button>
+        </div>
+        <div style="flex:1;">
+          <input type="text" class="form-input" id="confDescontoVal"
+            placeholder="0,00"
+            oninput="mascaraPreco(this); recalcularConfPedido()"
+            style="font-size:.92rem;" />
+        </div>
+      </div>
+      <div id="confDescontoErr" class="error-msg"></div>
+    </div>
+
+    <!-- Totais calculados -->
+    <div class="conf-totais">
+      <div class="conf-linha">
+        <span class="conf-linha-label">Subtotal</span>
+        <span class="conf-linha-val" id="confSubtotal">R$ 0,00</span>
+      </div>
+      <div class="conf-linha desconto" id="confLinhaDesconto" style="display:none;">
+        <span class="conf-linha-label">Desconto</span>
+        <span class="conf-linha-val" id="confDescontoDisplay">− R$ 0,00</span>
+      </div>
+      <div class="conf-linha destaque">
+        <span class="conf-linha-label" style="font-size:.95rem;color:var(--cafe);">Total final</span>
+        <span class="conf-linha-val" id="confTotalFinal">R$ 0,00</span>
+      </div>
+    </div>
+
+    <!-- Observação -->
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label class="form-label">Observação <span style="font-weight:400;text-transform:none;letter-spacing:0;">(opcional)</span></label>
+      <input type="text" class="form-input" id="confObs"
+        placeholder="Ex: Desconto PIX, promoção, cortesia…" />
+    </div>
+
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalConfPedido')">Cancelar</button>
+      <button class="btn btn-primary" onclick="executarConfirmarPedido()">✅ Confirmar venda</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: CONFIRMAÇÃO
+============================================================ -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="confirm-icon">⚠️</div>
+    <div class="modal-title" id="confirmTitulo" style="text-align:center;margin-bottom:.5rem;"></div>
+    <p class="confirm-msg" id="confirmMsg"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="fecharModal('confirmModal')">Cancelar</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ============================================================
+     JAVASCRIPT PRINCIPAL
+============================================================ -->
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Aplicação (ES Modules nativos) -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
