@@ -334,7 +334,7 @@ function renderTabelaCategorias() {
   });
 
   // Ativa drag-and-drop na tabela de state.categorias
-  ativarDragDrop(tbody, 'state.categorias');
+  ativarDragDrop(tbody, 'categorias');
 }
 
 document.getElementById('btnNovaCat').addEventListener('click', () => abrirModalCategoria(null));
@@ -455,7 +455,7 @@ function renderTabelaProdutos() {
   });
 
   // Ativa drag-and-drop na tabela de state.produtos
-  ativarDragDrop(tbody, 'state.produtos');
+  ativarDragDrop(tbody, 'produtos');
 }
 
 function renderSelectCategorias() {
@@ -1014,7 +1014,7 @@ function renderResumoEstoque() {
     <div class="estoque-card ok">
       <div class="estoque-card-label">Estoque normal</div>
       <div class="estoque-card-valor">${ok}</div>
-      <div class="estoque-card-sub">state.produtos com saldo saudável</div>
+      <div class="estoque-card-sub">produtos com saldo saudável</div>
     </div>
     <div class="estoque-card baixo">
       <div class="estoque-card-label">Estoque baixo</div>
@@ -1430,18 +1430,18 @@ function abrirDetalhe(prodId) {
   if (esgotado) {
     dispBadge.innerHTML = '<span style="color:var(--erro);">🔴 Esgotado</span>';
   } else if (noCarrinho > 0) {
-    dispBadge.innerHTML = `<span style="color:#b7860a;">⚠️ ${disponivel} disponível${disponivel!==1?'is':''} (${noCarrinho} já no state.carrinho)</span>`;
+    dispBadge.innerHTML = `<span style="color:#b7860a;">⚠️ ${disponivel} disponível${disponivel!==1?'is':''} (${noCarrinho} já no carrinho)</span>`;
   } else {
-    dispBadge.innerHTML = `<span style="color:var(--sucesso);">✅ ${disponivel} em state.estoque</span>`;
+    dispBadge.innerHTML = `<span style="color:var(--sucesso);">✅ ${disponivel} em estoque</span>`;
   }
 
   const btnAdd = document.getElementById('btnAddCart');
   if (esgotado) {
-    btnAdd.outerHTML = `<div class="detalhe-esgotado" id="btnAddCart">🔴 ${noCarrinho > 0 ? 'Limite do state.estoque atingido' : 'Produto esgotado'}</div>`;
+    btnAdd.outerHTML = `<div class="detalhe-esgotado" id="btnAddCart">🔴 ${noCarrinho > 0 ? 'Limite do estoque atingido' : 'Produto esgotado'}</div>`;
   } else {
     const curr = document.getElementById('btnAddCart');
     if (curr.tagName !== 'BUTTON') {
-      curr.outerHTML = `<button class="btn-add-cart" id="btnAddCart" onclick="addAoCarrinho()">🛒 Adicionar ao state.carrinho</button>`;
+      curr.outerHTML = `<button class="btn-add-cart" id="btnAddCart" onclick="addAoCarrinho()">🛒 Adicionar ao carrinho</button>`;
     }
     document.getElementById('btnAddCart').onclick = addAoCarrinho;
   }
@@ -1525,7 +1525,7 @@ function renderCarrinho() {
     wrap.innerHTML = `
       <div class="carrinho-vazio">
         <div class="carrinho-vazio-icon">🛒</div>
-        <p>Seu state.carrinho está vazio.</p>
+        <p>Seu carrinho está vazio.</p>
         <p style="font-size:.82rem;color:var(--cinza)">Clique em um produto para adicionar.</p>
       </div>`;
     foot.style.display = 'none';
@@ -1594,7 +1594,7 @@ function carrinhoAlterarQtd(prodId, delta) {
     const est        = state.estoque[prodId] || { quantidade: 0 };
     const disponivel = Math.max(0, est.quantidade - item.quantidade);
     if (disponivel <= 0) {
-      mostrarToast('Limite do state.estoque atingido.', 'error');
+      mostrarToast('Limite do estoque atingido.', 'error');
       return;
     }
   }
@@ -1978,7 +1978,7 @@ function salvarFornecedor() {
   const telefone = document.getElementById('fornTelefone').value.trim();
   const email    = document.getElementById('fornEmail').value.trim();
   const endereco = document.getElementById('fornEndereco').value.trim();
-  const state.produtos = document.getElementById('fornProdutos').value.trim();
+  const produtosField = document.getElementById('fornProdutos').value.trim();
   const obs      = document.getElementById('fornObs').value.trim();
   const editId   = document.getElementById('fornEditId').value;
 
@@ -1992,10 +1992,10 @@ function salvarFornecedor() {
 
   if (editId) {
     const idx = state.fornecedores.findIndex(f => f.id === editId);
-    if (idx > -1) state.fornecedores[idx] = { ...fornecedores[idx], nome, telefone, email, endereco, state.produtos, obs };
+    if (idx > -1) state.fornecedores[idx] = { ...fornecedores[idx], nome, telefone, email, endereco, produtos: produtosField, obs };
     mostrarToast('Fornecedor atualizado! ✓', 'success');
   } else {
-    state.fornecedores.push({ id: gerarId(), nome, telefone, email, endereco, state.produtos, obs });
+    state.fornecedores.push({ id: gerarId(), nome, telefone, email, endereco, produtos: produtosField, obs });
     mostrarToast('Fornecedor cadastrado! ✓', 'success');
   }
 
@@ -2209,9 +2209,9 @@ function renderKpis() {
       <div class="rel-kpi-sub">valor total das entradas no período</div>
     </div>
     <div class="rel-kpi ${estoqueAlerta > 0 ? 'terra' : 'verde'}">
-      <div class="rel-kpi-label">Alertas de state.estoque</div>
+      <div class="rel-kpi-label">Alertas de estoque</div>
       <div class="rel-kpi-valor">${estoqueAlerta}</div>
-      <div class="rel-kpi-sub">produto${estoqueAlerta!==1?'s':''} com state.estoque baixo ou zerado</div>
+      <div class="rel-kpi-sub">produto${estoqueAlerta!==1?'s':''} com estoque baixo ou zerado</div>
     </div>
   `;
 }
@@ -2475,7 +2475,7 @@ function renderChartEstoque() {
   ctx.fillStyle = '#2C1810'; ctx.font = 'bold 18px serif'; ctx.textAlign = 'center';
   ctx.fillText(total, cx, cy + 4);
   ctx.font = '10px sans-serif'; ctx.fillStyle = '#888';
-  ctx.fillText('state.produtos', cx, cy + 16);
+  ctx.fillText('Produtos', cx, cy + 16);
 
   // Legenda
   const leg = document.getElementById('legendEstoque');
@@ -2671,7 +2671,7 @@ function renderTabelaPedidos() {
   const wrap = document.getElementById('pedidosLista');
   if (!wrap) return;
 
-  let lista = [...pedidos];
+  let lista = [...state.pedidos];
   if (_filtroPedidos !== 'todos') lista = lista.filter(p => p.status === _filtroPedidos);
 
   if (lista.length === 0) {
@@ -2938,7 +2938,7 @@ function cancelarPedido(pedId) {
 
   document.getElementById('confirmTitulo').textContent = 'Cancelar Pedido';
   document.getElementById('confirmMsg').innerHTML =
-    `Cancelar o pedido <strong>${escapeHtml(ped.numero)}</strong>? O state.estoque não será alterado.`;
+    `Cancelar o pedido <strong>${escapeHtml(ped.numero)}</strong>? O estoque não será alterado.`;
   document.getElementById('confirmOkBtn').onclick = () => {
     ped.status = 'cancelado';
     ped.dataCancelamento = new Date().toISOString();
@@ -3193,12 +3193,12 @@ function adicionarCompra() {
   if (!c) return;
   const data     = document.getElementById('compraData').value;
   const valorRaw = document.getElementById('compraValor').value.trim();
-  const state.produtos = document.getElementById('compraProdutos').value.trim();
+  const produtosField = document.getElementById('compraProdutos').value.trim();
   if (!data || !valorRaw) { mostrarToast('Informe a data e o valor.', 'error'); return; }
   const valor = precoParaNum('R$ ' + valorRaw);
   if (!valor) { mostrarToast('Valor inválido.', 'error'); return; }
   if (!c.compras) c.compras = [];
-  c.compras.push({ id: gerarId(), data, valor, state.produtos });
+  c.compras.push({ id: gerarId(), data, valor, produtos: produtosField });
   c.compras.sort((a, b) => a.data.localeCompare(b.data));
   persistir();
   document.getElementById('compraValor').value    = '';
@@ -3270,7 +3270,7 @@ function ativarDragDrop(tbody, tipo) {
     tbody.querySelectorAll('tr').forEach(r =>
       r.classList.remove('drag-over-top', 'drag-over-bottom'));
 
-    if (tipo === 'state.categorias') {
+    if (tipo === 'categorias') {
       reordenarArray(state.categorias, dragSrcId, tr.dataset.id, isTop);
       persistir();
       renderTabelaCategorias();
