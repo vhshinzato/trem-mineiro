@@ -54,11 +54,13 @@ export async function carregarDoSupabase() {
     { data: cats },
     { data: prods },
     { data: cfgRow },
+    { data: usrRows },
   ] = await Promise.race([
     Promise.all([
       sb.from('categorias').select('*').order('ordem'),
       sb.from('produtos').select('*').order('ordem'),
       sb.from('config').select('*').eq('id','main').maybeSingle(),
+      sb.from('usuarios').select('*'),
     ]),
     timeout
   ]);
@@ -73,6 +75,10 @@ export async function carregarDoSupabase() {
     ? prods.map(p => ({ id: p.id, categoriaId: p.categoria_id, nome: p.nome,
         descricao: p.descricao, preco: p.preco, imagem: p.imagem || '' }))
     : PRODUTOS_PADRAO;
+
+  state.usuarios = (usrRows && usrRows.length)
+    ? usrRows.map(u => ({ id: u.id, nome: u.nome, login: u.login, senha: u.senha, perfil: u.perfil }))
+    : USUARIOS_PADRAO;
 
   if (cfgRow && cfgRow.dados) {
     var d = cfgRow.dados;
