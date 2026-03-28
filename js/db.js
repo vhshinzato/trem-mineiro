@@ -4,11 +4,11 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 import { SUPA_URL, SUPA_KEY, WHATSAPP_DEFAULT,
          CATEGORIAS_PADRAO, PRODUTOS_PADRAO, USUARIOS_PADRAO } from './config.js';
 
-function carregarDados(chave, padrao) {
+export function carregarDados(chave, padrao) {
   try { var r = localStorage.getItem(chave); return r ? JSON.parse(r) : padrao; }
   catch { return padrao; }
 }
-function salvarDados(chave, valor) {
+export function salvarDados(chave, valor) {
   try { localStorage.setItem(chave, JSON.stringify(valor)); } catch(e) {}
 }
 
@@ -43,7 +43,7 @@ const sb = createClient(SUPA_URL, SUPA_KEY);
 // Sessão — sempre local
 
 /* ── FASE 1: carrega só cardápio público (rápido) ─────── */
-async function carregarDoSupabase() {
+export async function carregarDoSupabase() {
   document.getElementById('loadingMsg').textContent = 'Conectando ao servidor...';
 
   const timeout = new Promise((_, reject) =>
@@ -84,7 +84,7 @@ async function carregarDoSupabase() {
 }
 
 /* ── FASE 2: carrega dados do painel admin (lazy) ─────── */
-async function carregarDadosAdmin() {
+export async function carregarDadosAdmin() {
   if (state._adminCarregado) return;
 
   const [
@@ -152,7 +152,7 @@ async function carregarDadosAdmin() {
 
 /* ── Persistir (debounced 800ms) ─────────────────────── */
 var _syncTimer = null;
-function persistir() {
+export function persistir() {
   clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async function() {
     try { await syncToSupabase(); }
@@ -221,7 +221,7 @@ async function syncToSupabase() {
   await Promise.all(ops);
 }
 
-async function salvarManualSupabase() {
+export async function salvarManualSupabase() {
   var btn = document.getElementById('btnSalvarSupabase');
   if (!btn) return;
   btn.disabled = true;
@@ -253,7 +253,7 @@ async function salvarManualSupabase() {
 }
 
 // Garante que todos os state.produtos tenham entrada no objeto de state.estoque
-function garantirEntradaEstoque() {
+export function garantirEntradaEstoque() {
   let alterado = false;
   state.produtos.forEach(p => {
     if (!state.estoque[p.id]) {
@@ -268,14 +268,14 @@ function garantirEntradaEstoque() {
 }
 
 // Helpers de status de state.estoque
-function statusEstoque(prodId) {
+export function statusEstoque(prodId) {
   const e = state.estoque[prodId] || { quantidade: 0, minimo: 5, maximo: 50 };
   if (e.quantidade <= 0)                          return 'zero';
   if (e.quantidade <= e.minimo)                   return 'baixo';
   if (e.maximo > 0 && e.quantidade > e.maximo)    return 'excesso';
   return 'ok';
 }
-function labelStatus(status) {
+export function labelStatus(status) {
   if (status === 'zero')    return '<span class="badge-estoque zero">🔴 Esgotado</span>';
   if (status === 'baixo')   return '<span class="badge-estoque baixo">⚠️ Baixo</span>';
   if (status === 'excesso') return '<span class="badge-estoque excesso">🔵 Excedido</span>';
@@ -283,7 +283,7 @@ function labelStatus(status) {
 }
 
 // Gera ID único simples
-function gerarId() {
+export function gerarId() {
   return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
 }
 
