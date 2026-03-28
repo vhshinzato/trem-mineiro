@@ -787,7 +787,14 @@ async function salvarUsuario() {
     const idx = state.usuarios.findIndex(u => u.id === editId);
     if (idx > -1) state.usuarios[idx] = { ...state.usuarios[idx], nome, login, senha, perfil };
     if (state.sessao && editId === state.sessao.id) {
-      await atualizarSenhaAuth(senha);
+      const { error: authErr } = await atualizarSenhaAuth(senha);
+      if (authErr) {
+        mostrarToast('Dados salvos, mas falha ao atualizar senha: ' + authErr.message, 'error');
+        persistir();
+        fecharModal('modalUsuario');
+        renderTabelaUsuarios();
+        return;
+      }
     }
     mostrarToast('Usuário atualizado!', 'success');
   } else {
