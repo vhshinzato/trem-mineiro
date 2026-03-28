@@ -1,7 +1,7 @@
-/* ============================================================
-   style.css — Estilos completos do Trem Mineiro
-============================================================ */
-
+@keyframes dotPulse {
+  0%,80%,100%{opacity:.3;transform:scale(.8);}
+  40%{opacity:1;transform:scale(1.2);}
+}
 
     /* ============================================================
        VARIÁVEIS GLOBAIS E RESET
@@ -1996,11 +1996,3 @@
     }
     /* Garante que divs com onclick sejam clicáveis no Safari */
     [onclick] { cursor: pointer; }
-
-  
-
-
-@keyframes dotPulse {
-  0%,80%,100%{opacity:.3;transform:scale(.8);}
-  40%{opacity:1;transform:scale(1.2);}
-}
