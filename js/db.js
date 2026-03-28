@@ -26,11 +26,24 @@ export const state = {
   estoque: {},
   movimentos: [],
   _adminCarregado: false,
-  sessao: carregarDados('sm_sessao',         null),
+  sessao: null,
   sessaoCliente: carregarDados('sm_sessao_cliente', null),
 };
 
-const sb = createClient(SUPA_URL, SUPA_KEY);
+export const sb = createClient(SUPA_URL, SUPA_KEY);
+
+export async function loginAdmin(login, senha) {
+  return sb.auth.signInWithPassword({ email: `${login}@trem-mineiro.app`, password: senha });
+}
+export async function logoutAdmin() {
+  return sb.auth.signOut();
+}
+export async function getAuthSession() {
+  return sb.auth.getSession();
+}
+export async function criarAuthUser(login, senha) {
+  return sb.auth.signUp({ email: `${login}@trem-mineiro.app`, password: senha });
+}
 
 /* ============================================================
    SUPABASE — camada de dados com lazy loading

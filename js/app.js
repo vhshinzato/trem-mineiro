@@ -4,7 +4,8 @@ import { state,
   carregarDados, salvarDados,
   carregarDoSupabase, carregarDadosAdmin,
   persistir, salvarManualSupabase,
-  garantirEntradaEstoque, statusEstoque, labelStatus, gerarId
+  garantirEntradaEstoque, statusEstoque, labelStatus, gerarId,
+  loginAdmin, logoutAdmin, getAuthSession, criarAuthUser
 } from './db.js';
 import { WHATSAPP_DEFAULT, CATEGORIAS_PADRAO,
          PRODUTOS_PADRAO, USUARIOS_PADRAO } from './config.js';
@@ -188,19 +189,25 @@ document.getElementById('btnLoginTopo').addEventListener('click', () => {
   }
 });
 
-function fazerLogin() {
+async function fazerLogin() {
   const login = document.getElementById('loginUser').value.trim();
   const senha = document.getElementById('loginPass').value;
   const alerta = document.getElementById('loginAlert');
 
-  const usuario = state.usuarios.find(u => u.login === login && u.senha === senha);
-  if (!usuario) {
+  const { error } = await loginAdmin(login, senha);
+  if (error) {
     alerta.innerHTML = `<div class="alert alert-error">Login ou senha inválidos.</div>`;
     return;
   }
 
+  const usuario = state.usuarios.find(u => u.login === login);
+  if (!usuario) {
+    alerta.innerHTML = `<div class="alert alert-error">Usuário não configurado no sistema.</div>`;
+    await logoutAdmin();
+    return;
+  }
+
   state.sessao = { id: usuario.id, nome: usuario.nome, perfil: usuario.perfil };
-  salvarDados('sm_sessao', state.sessao);
   alerta.innerHTML = '';
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
@@ -208,9 +215,9 @@ function fazerLogin() {
   abrirAdmin();
 }
 
-function fazerLogout() {
+async function fazerLogout() {
+  await logoutAdmin();
   state.sessao = null;
-  localStorage.removeItem('sm_sessao');
   fecharAdmin();
   mostrarToast('Sessão encerrada.', 'success');
 }
@@ -751,7 +758,7 @@ function abrirModalUsuario(userId) {
   abrirModal('modalUsuario');
 }
 
-function salvarUsuario() {
+async function salvarUsuario() {
   const nome   = document.getElementById('userNome').value.trim();
   const login  = document.getElementById('userLogin').value.trim();
   const senha  = document.getElementById('userSenha').value;
@@ -782,6 +789,7 @@ function salvarUsuario() {
     mostrarToast('Usuário atualizado!', 'success');
   } else {
     state.usuarios.push({ id: gerarId(), nome, login, senha, perfil });
+    await criarAuthUser(login, senha);
     mostrarToast('Usuário criado!', 'success');
   }
   persistir();
@@ -3575,6 +3583,18 @@ async function inicializar() {
     if (!state.usuarios.length)   state.usuarios   = USUARIOS_PADRAO;
     mostrarToast('Erro de conexão. Exibindo dados padrão.', 'error');
   }
+
+  // Restaura sessão admin do Supabase Auth
+  try {
+    const { data: { session } } = await getAuthSession();
+    if (session) {
+      const login = session.user.email.replace('@trem-mineiro.app', '');
+      const usuario = state.usuarios.find(u => u.login === login);
+      if (usuario) {
+        state.sessao = { id: usuario.id, nome: usuario.nome, perfil: usuario.perfil };
+      }
+    }
+  } catch(e) { /* ignora erros de auth no init */ }
 
   garantirEntradaEstoque();
   renderCatNav();
