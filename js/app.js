@@ -2902,7 +2902,7 @@ function executarConfirmarPedido() {
       ].filter(Boolean).join(' | ');
       cliente.compras.push({
         id: gerarId(), data: dataStr,
-        valor: totalFinal, state.produtos: descObs
+        valor: totalFinal, produtos: descObs
       });
       cliente.compras.sort((a, b) => a.data.localeCompare(b.data));
     }
