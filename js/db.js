@@ -44,6 +44,9 @@ export async function getAuthSession() {
 export async function criarAuthUser(email, senha) {
   return sb.auth.signUp({ email, password: senha });
 }
+export async function atualizarSenhaAuth(novaSenha) {
+  return sb.auth.updateUser({ password: novaSenha });
+}
 
 /* ============================================================
    SUPABASE — camada de dados com lazy loading

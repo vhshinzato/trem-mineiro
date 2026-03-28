@@ -5,7 +5,7 @@ import { state,
   carregarDoSupabase, carregarDadosAdmin,
   persistir, salvarManualSupabase,
   garantirEntradaEstoque, statusEstoque, labelStatus, gerarId,
-  loginAdmin, logoutAdmin, getAuthSession, criarAuthUser
+  loginAdmin, logoutAdmin, getAuthSession, criarAuthUser, atualizarSenhaAuth
 } from './db.js';
 import { WHATSAPP_DEFAULT, CATEGORIAS_PADRAO,
          PRODUTOS_PADRAO, USUARIOS_PADRAO } from './config.js';
@@ -786,6 +786,9 @@ async function salvarUsuario() {
   if (editId) {
     const idx = state.usuarios.findIndex(u => u.id === editId);
     if (idx > -1) state.usuarios[idx] = { ...state.usuarios[idx], nome, login, senha, perfil };
+    if (state.sessao && editId === state.sessao.id) {
+      await atualizarSenhaAuth(senha);
+    }
     mostrarToast('Usuário atualizado!', 'success');
   } else {
     const novoEmail = document.getElementById('userEmail') ? document.getElementById('userEmail').value.trim() : '';
