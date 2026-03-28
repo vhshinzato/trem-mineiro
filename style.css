@@ -1996,3 +1996,28 @@
     }
     /* Garante que divs com onclick sejam clicáveis no Safari */
     [onclick] { cursor: pointer; }
+
+
+/* ── Toggle mostrar/ocultar senha ── */
+.input-senha-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-senha-wrap .form-input {
+  flex: 1;
+  padding-right: 2.6rem;
+}
+.btn-ver-senha {
+  position: absolute;
+  right: .5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: .25rem;
+  color: var(--texto-claro, #888);
+  opacity: .7;
+}
+.btn-ver-senha:hover { opacity: 1; }

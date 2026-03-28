@@ -948,6 +948,17 @@ function mostrarToast(msg, tipo = 'success') {
 /* ============================================================
    MASCARA DE MOEDA
 ============================================================ */
+function toggleSenha(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
 function mascaraPreco(input) {
   let v = input.value.replace(/\D/g, '');
   v = (parseInt(v, 10) || 0).toString();
@@ -3750,6 +3761,7 @@ if (typeof handleLogoUpload !== "undefined") window.handleLogoUpload = handleLog
 if (typeof limparCarrinho !== "undefined") window.limparCarrinho = limparCarrinho;
 if (typeof logoutCliente !== "undefined") window.logoutCliente = logoutCliente;
 if (typeof mascaraPreco !== "undefined") window.mascaraPreco = mascaraPreco;
+if (typeof toggleSenha !== "undefined") window.toggleSenha = toggleSenha;
 if (typeof moverHeroMedia !== "undefined") window.moverHeroMedia = moverHeroMedia;
 if (typeof pedirLoginParaPedido !== "undefined") window.pedirLoginParaPedido = pedirLoginParaPedido;
 if (typeof previewImagem !== "undefined") window.previewImagem = previewImagem;
