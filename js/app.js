@@ -194,16 +194,16 @@ async function fazerLogin() {
   const senha = document.getElementById('loginPass').value;
   const alerta = document.getElementById('loginAlert');
 
-  const { error } = await loginAdmin(login, senha);
-  if (error) {
+  const usuario = state.usuarios.find(u => u.login === login);
+  if (!usuario) {
     alerta.innerHTML = `<div class="alert alert-error">Login ou senha inválidos.</div>`;
     return;
   }
 
-  const usuario = state.usuarios.find(u => u.login === login);
-  if (!usuario) {
-    alerta.innerHTML = `<div class="alert alert-error">Usuário não configurado no sistema.</div>`;
-    await logoutAdmin();
+  const emailAuth = usuario.email || `${login}@trem-mineiro.app`;
+  const { error } = await loginAdmin(emailAuth, senha);
+  if (error) {
+    alerta.innerHTML = `<div class="alert alert-error">Login ou senha inválidos.</div>`;
     return;
   }
 
@@ -788,8 +788,10 @@ async function salvarUsuario() {
     if (idx > -1) state.usuarios[idx] = { ...state.usuarios[idx], nome, login, senha, perfil };
     mostrarToast('Usuário atualizado!', 'success');
   } else {
-    state.usuarios.push({ id: gerarId(), nome, login, senha, perfil });
-    await criarAuthUser(login, senha);
+    const novoEmail = document.getElementById('userEmail') ? document.getElementById('userEmail').value.trim() : '';
+    state.usuarios.push({ id: gerarId(), nome, login, email: novoEmail, senha, perfil });
+    const emailAuth = novoEmail || `${login}@trem-mineiro.app`;
+    await criarAuthUser(emailAuth, senha);
     mostrarToast('Usuário criado!', 'success');
   }
   persistir();
@@ -3588,8 +3590,10 @@ async function inicializar() {
   try {
     const { data: { session } } = await getAuthSession();
     if (session) {
-      const login = session.user.email.replace('@trem-mineiro.app', '');
-      const usuario = state.usuarios.find(u => u.login === login);
+      const emailSessao = session.user.email;
+      const usuario = state.usuarios.find(u =>
+        u.email === emailSessao || `${u.login}@trem-mineiro.app` === emailSessao
+      );
       if (usuario) {
         state.sessao = { id: usuario.id, nome: usuario.nome, perfil: usuario.perfil };
       }

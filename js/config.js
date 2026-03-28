@@ -34,7 +34,7 @@ export const PRODUTOS_PADRAO = [
 ];
 
 export const USUARIOS_PADRAO = [
-  { id: 'u1', nome: 'Administrador', login: 'admin',       senha: '1234', perfil: 'admin' },
-  { id: 'u2', nome: 'Funcionário',   login: 'funcionario', senha: '1234', perfil: 'funcionario' },
+  { id: 'u1', nome: 'Administrador', login: 'admin',       email: 'tremmineiro010@gmail.com', senha: '1234', perfil: 'admin' },
+  { id: 'u2', nome: 'Funcionário',   login: 'funcionario', email: '', senha: '1234', perfil: 'funcionario' },
 ];
 

@@ -32,8 +32,8 @@ export const state = {
 
 export const sb = createClient(SUPA_URL, SUPA_KEY);
 
-export async function loginAdmin(login, senha) {
-  return sb.auth.signInWithPassword({ email: `${login}@trem-mineiro.app`, password: senha });
+export async function loginAdmin(email, senha) {
+  return sb.auth.signInWithPassword({ email, password: senha });
 }
 export async function logoutAdmin() {
   return sb.auth.signOut();
@@ -41,8 +41,8 @@ export async function logoutAdmin() {
 export async function getAuthSession() {
   return sb.auth.getSession();
 }
-export async function criarAuthUser(login, senha) {
-  return sb.auth.signUp({ email: `${login}@trem-mineiro.app`, password: senha });
+export async function criarAuthUser(email, senha) {
+  return sb.auth.signUp({ email, password: senha });
 }
 
 /* ============================================================
@@ -90,7 +90,7 @@ export async function carregarDoSupabase() {
     : PRODUTOS_PADRAO;
 
   state.usuarios = (usrRows && usrRows.length)
-    ? usrRows.map(u => ({ id: u.id, nome: u.nome, login: u.login, senha: u.senha, perfil: u.perfil }))
+    ? usrRows.map(u => ({ id: u.id, nome: u.nome, login: u.login, email: u.email||'', senha: u.senha, perfil: u.perfil }))
     : USUARIOS_PADRAO;
 
   if (cfgRow && cfgRow.dados) {
@@ -163,7 +163,7 @@ export async function carregarDadosAdmin() {
   }; });
 
   state.usuarios = (usrRows && usrRows.length)
-    ? usrRows.map(function(u) { return { id: u.id, nome: u.nome, login: u.login, senha: u.senha, perfil: u.perfil }; })
+    ? usrRows.map(function(u) { return { id: u.id, nome: u.nome, login: u.login, email: u.email||'', senha: u.senha, perfil: u.perfil }; })
     : USUARIOS_PADRAO;
 
   state._adminCarregado = true;
@@ -235,7 +235,7 @@ async function syncToSupabase() {
     }; })));
   if (state.usuarios.length)
     ops.push(sb.from('usuarios').upsert(state.usuarios.map(function(u){ return {
-      id:u.id, nome:u.nome, login:u.login, senha:u.senha, perfil:u.perfil
+      id:u.id, nome:u.nome, login:u.login, email:u.email||null, senha:u.senha, perfil:u.perfil
     }; })));
   await Promise.all(ops);
 }
