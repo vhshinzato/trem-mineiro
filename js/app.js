@@ -2694,7 +2694,7 @@ function renderFornecedoresRel() {
 ============================================================ */
 
 let _filtroPedidos = 'todos';
-const _PEDIDOS_POR_PAGINA = 50;
+const _PEDIDOS_POR_PAGINA = 25;
 let _pedidosPagina = 1;
 
 function filtrarPedidos(status, btn) {
@@ -2736,9 +2736,12 @@ function renderTabelaPedidos() {
 
   wrap.innerHTML = '';
   const total = lista.length;
-  lista = lista.slice(0, _pedidosPagina * _PEDIDOS_POR_PAGINA);
+  const totalPaginas = Math.ceil(total / _PEDIDOS_POR_PAGINA);
+  if (_pedidosPagina > totalPaginas) _pedidosPagina = 1;
+  const inicio = (_pedidosPagina - 1) * _PEDIDOS_POR_PAGINA;
+  const paginaAtual = lista.slice(inicio, inicio + _PEDIDOS_POR_PAGINA);
 
-  lista.forEach(ped => {
+  paginaAtual.forEach(ped => {
     const data  = new Date(ped.data);
     const hora  = data.toLocaleDateString('pt-BR') + ' às ' +
                   data.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
@@ -2804,13 +2807,38 @@ function renderTabelaPedidos() {
     wrap.appendChild(div);
   });
 
-  if (lista.length < total) {
-    const btnMais = document.createElement('button');
-    btnMais.className = 'btn btn-outline';
-    btnMais.style.cssText = 'display:block;margin:1rem auto;width:100%;max-width:300px;';
-    btnMais.textContent = `Carregar mais (${total - lista.length} restantes)`;
-    btnMais.onclick = function() { _pedidosPagina++; renderTabelaPedidos(); };
-    wrap.appendChild(btnMais);
+  if (totalPaginas > 1) {
+    const nav = document.createElement('div');
+    nav.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1rem;flex-wrap:wrap;';
+
+    const btnAnterior = document.createElement('button');
+    btnAnterior.className = 'btn btn-outline btn-sm';
+    btnAnterior.textContent = '← Anterior';
+    btnAnterior.disabled = _pedidosPagina === 1;
+    btnAnterior.onclick = function() { _pedidosPagina--; renderTabelaPedidos(); };
+    nav.appendChild(btnAnterior);
+
+    for (let i = 1; i <= totalPaginas; i++) {
+      const btnPag = document.createElement('button');
+      btnPag.className = 'btn btn-sm ' + (i === _pedidosPagina ? 'btn-primary' : 'btn-outline');
+      btnPag.textContent = i;
+      btnPag.onclick = (function(p) { return function() { _pedidosPagina = p; renderTabelaPedidos(); }; })(i);
+      nav.appendChild(btnPag);
+    }
+
+    const btnProximo = document.createElement('button');
+    btnProximo.className = 'btn btn-outline btn-sm';
+    btnProximo.textContent = 'Próximo →';
+    btnProximo.disabled = _pedidosPagina === totalPaginas;
+    btnProximo.onclick = function() { _pedidosPagina++; renderTabelaPedidos(); };
+    nav.appendChild(btnProximo);
+
+    const info = document.createElement('div');
+    info.style.cssText = 'width:100%;text-align:center;font-size:.78rem;color:var(--cinza);margin-top:.3rem;';
+    info.textContent = `${inicio + 1}–${Math.min(inicio + _PEDIDOS_POR_PAGINA, total)} de ${total} pedidos`;
+    nav.appendChild(info);
+
+    wrap.appendChild(nav);
   }
 }
 
