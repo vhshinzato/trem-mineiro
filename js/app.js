@@ -5,7 +5,7 @@ import { state,
   carregarDoSupabase, carregarDadosAdmin,
   persistir, salvarManualSupabase,
   garantirEntradaEstoque, statusEstoque, labelStatus, gerarId,
-  loginAdmin, logoutAdmin, getAuthSession, criarAuthUser, atualizarSenhaAuth
+  loginAdmin, logoutAdmin, getAuthSession, criarAuthUser, atualizarSenhaAuth, uploadImagemStorage
 } from './db.js';
 import { WHATSAPP_DEFAULT, CATEGORIAS_PADRAO,
          PRODUTOS_PADRAO, USUARIOS_PADRAO } from './config.js';
@@ -553,12 +553,11 @@ function abrirModalProduto(prodId) {
   abrirModal('modalProduto');
 }
 
-function salvarProduto() {
+async function salvarProduto() {
   const catId = document.getElementById('prodCategoria').value;
   const nome  = document.getElementById('prodNome').value.trim();
   const desc  = document.getElementById('prodDesc').value.trim();
   const preco = document.getElementById('prodPreco').value.trim();
-  const img   = obterImagemFinal();
   const editId= document.getElementById('prodEditId').value;
 
   let valido = true;
@@ -573,17 +572,38 @@ function salvarProduto() {
 
   const precoFormatado = 'R$ ' + (preco.includes(',') ? preco : parseFloat(preco).toFixed(2).replace('.',','));
 
-  if (editId) {
-    const idx = state.produtos.findIndex(p => p.id === editId);
-    if (idx > -1) {
-      state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img };
+  // Upload da imagem para o Storage se houver arquivo selecionado
+  let img = obterImagemFinal();
+  if (_imgAbaAtiva === 'upload' && _imagemBase64 && _imagemFile) {
+    try {
+      mostrarToast('Enviando imagem...', 'success');
+      const prodId = editId || gerarId();
+      img = await uploadImagemStorage(_imagemBase64, 'produtos', prodId);
+      if (editId) {
+        const idx = state.produtos.findIndex(p => p.id === editId);
+        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img };
+        mostrarToast('Produto atualizado!', 'success');
+      } else {
+        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img });
+        garantirEntradaEstoque();
+        mostrarToast('Produto criado!', 'success');
+      }
+    } catch(err) {
+      mostrarToast('Erro ao enviar imagem: ' + err.message, 'error');
+      return;
     }
-    mostrarToast('Produto atualizado!', 'success');
   } else {
-    state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img });
-    garantirEntradaEstoque();
-    mostrarToast('Produto criado!', 'success');
+    if (editId) {
+      const idx = state.produtos.findIndex(p => p.id === editId);
+      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img };
+      mostrarToast('Produto atualizado!', 'success');
+    } else {
+      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img });
+      garantirEntradaEstoque();
+      mostrarToast('Produto criado!', 'success');
+    }
   }
+
   persistir();
   fecharModal('modalProduto');
   renderTabelaProdutos();
@@ -641,6 +661,7 @@ function comprimirImagem(file, maxW, maxH, qualidade) {
 
 // Guarda o base64 da imagem carregada do arquivo (temporário, por modal aberto)
 let _imagemBase64 = null;
+let _imagemFile   = null; // arquivo original para upload no Storage
 // Indica qual aba está ativa: 'url' ou 'upload'
 let _imgAbaAtiva = 'url';
 
@@ -653,6 +674,7 @@ function trocarAbaImagem(aba, btn) {
   document.getElementById('imgPanelUpload').style.display = aba === 'upload' ? '' : 'none';
   // Limpa preview e estado ao trocar de aba
   _imagemBase64 = null;
+  _imagemFile   = null;
   document.getElementById('prodImagem').value = '';
   document.getElementById('prodImagemFile').value = '';
   document.getElementById('uploadFileName').textContent = '';
@@ -684,6 +706,7 @@ function handleFileUpload(input) {
 
   comprimirImagem(file, 800, 800, 0.80).then(function(base64) {
     _imagemBase64 = base64;
+    _imagemFile   = file;
     document.getElementById('uploadFileName').textContent = '✔ ' + file.name;
     const wrap = document.getElementById('imgPreviewWrap');
     wrap.innerHTML = `
@@ -696,6 +719,7 @@ function handleFileUpload(input) {
 // Remove a imagem atual do preview
 function removerImagem() {
   _imagemBase64 = null;
+  _imagemFile   = null;
   document.getElementById('prodImagem').value = '';
   document.getElementById('prodImagemFile').value = '';
   document.getElementById('uploadFileName').textContent = '';
@@ -864,6 +888,7 @@ function salvarWhatsapp() {
 
 // Guarda o base64 temporário antes de salvar
 let _logoBase64Temp = null;
+let _logoFileTemp   = null;
 
 function handleLogoUpload(input) {
   const file = input.files && input.files[0];
@@ -875,20 +900,29 @@ function handleLogoUpload(input) {
   }
   comprimirImagem(file, 400, 400, 0.85).then(function(base64) {
     _logoBase64Temp = base64;
+    _logoFileTemp   = file;
     const prev = document.getElementById('logoPreviewAdmin');
     prev.innerHTML = `<img src="${_logoBase64Temp}" alt="logo" />`;
     document.getElementById('logoFileName').textContent = '✔ ' + file.name;
   });
 }
 
-function salvarLogo() {
+async function salvarLogo() {
   if (!_logoBase64Temp) {
     mostrarToast('Selecione uma imagem primeiro.', 'error');
     return;
   }
-  state.config.logo = _logoBase64Temp;
+  try {
+    mostrarToast('Enviando logo...', 'success');
+    const url = await uploadImagemStorage(_logoBase64Temp, 'logo', 'logo');
+    state.config.logo = url;
+  } catch(err) {
+    mostrarToast('Erro ao enviar logo: ' + err.message, 'error');
+    return;
+  }
   persistir();
   _logoBase64Temp = null;
+  _logoFileTemp   = null;
   aplicarLogo();
   document.getElementById('btnRemoverLogo').style.display = '';
   mostrarToast('Logo atualizada! ✓', 'success');

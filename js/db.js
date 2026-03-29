@@ -53,6 +53,20 @@ export async function atualizarSenhaAuth(novaSenha) {
   return sb.auth.updateUser({ password: novaSenha });
 }
 
+export async function uploadImagemStorage(base64, pasta, nomeArquivo) {
+  // Converte base64 para Blob
+  const res  = await fetch(base64);
+  const blob = await res.blob();
+  const path = pasta + '/' + nomeArquivo + '.jpg';
+  const { error } = await sb.storage.from('imagens').upload(path, blob, {
+    contentType: 'image/jpeg',
+    upsert: true
+  });
+  if (error) throw error;
+  const { data } = sb.storage.from('imagens').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 /* ============================================================
    SUPABASE — camada de dados com lazy loading
 ============================================================ */
