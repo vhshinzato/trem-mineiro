@@ -816,9 +816,11 @@
 
       <!-- Descrição Estoque -->
       <div id="importDescEstoque" style="display:none;background:var(--creme);border-radius:var(--radius-sm);padding:1rem 1.2rem;margin-bottom:1.2rem;font-size:.83rem;color:var(--cafe-soft);">
-        <strong>Colunas obrigatórias:</strong> <code>nome_produto</code>, <code>quantidade</code><br>
-        Colunas opcionais: <code>minimo</code>, <code>maximo</code><br>
-        O nome do produto deve ser exatamente igual ao cadastrado no sistema (case insensitive).<br>
+        <strong>Colunas obrigatórias:</strong> <code>tipo</code>, <code>nome_produto</code>, <code>quantidade</code><br>
+        <strong>Colunas opcionais:</strong> <code>fornecedor</code>, <code>data_compra</code>, <code>valor_unitario</code>, <code>observacao</code><br>
+        <strong>Valores para <code>tipo</code>:</strong> <code>entrada</code> · <code>saida</code> · <code>ajuste</code><br>
+        Data no formato <code>AAAA-MM-DD</code> (ex: 2026-03-28). Valor unitário com ponto decimal (ex: 18.00).<br>
+        Cada linha é uma movimentação — o histórico é registrado automaticamente.<br>
         <a href="./modelos/estoque.csv" download style="color:var(--terra);font-weight:700;margin-top:.5rem;display:inline-block;">⬇ Baixar modelo estoque.csv</a>
       </div>
 

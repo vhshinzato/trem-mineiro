@@ -1,10 +1,5 @@
-nome_produto,quantidade,minimo,maximo
-Café Especial Cerrado,10,5,50
-Café Torrado & Moído Premium,10,5,50
-Café em Grãos Chapada,10,5,50
-Doce de Leite Cremoso,10,5,50
-Doce de Leite com Canela,10,5,50
-Queijo Minas Frescal,10,5,50
-Queijo da Canastra,10,5,50
-Kit Café da Manhã Mineiro,10,5,50
-Kit Presente Gourmet,10,5,50
+tipo,nome_produto,quantidade,fornecedor,data_compra,valor_unitario,observacao
+entrada,Café Especial Cerrado,20,Fazenda Serra Verde,2026-03-28,18.00,Lote março 2026
+entrada,Queijo da Canastra,10,Laticínios Canastra Ltda.,2026-03-28,32.00,Maturado 45 dias
+saida,Doce de Leite Cremoso,5,,,, Vendas do fim de semana
+ajuste,Café Torrado & Moído Premium,8,,,,Contagem física - ajuste manual

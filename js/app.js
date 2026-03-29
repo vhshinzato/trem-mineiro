@@ -3911,24 +3911,39 @@ function processarCSVImport(text) {
       _importDados.push({ catNome: cat.nome, categoriaId: cat.id, nome, desc, precoNum });
     });
   } else {
-    const iNome = headers.indexOf('nome_produto');
-    const iQtd  = headers.indexOf('quantidade');
-    const iMin  = headers.indexOf('minimo');
-    const iMax  = headers.indexOf('maximo');
-    if (iNome === -1 || iQtd === -1) {
-      _mostrarAlertImport('error', 'Colunas obrigatórias não encontradas. Esperado: nome_produto, quantidade');
+    // Movimentações: tipo, nome_produto, quantidade, fornecedor, data_compra, valor_unitario, observacao
+    const iTipo  = headers.indexOf('tipo');
+    const iNome  = headers.indexOf('nome_produto');
+    const iQtd   = headers.indexOf('quantidade');
+    const iForn  = headers.indexOf('fornecedor');
+    const iData  = headers.indexOf('data_compra');
+    const iVlr   = headers.indexOf('valor_unitario');
+    const iObs   = headers.indexOf('observacao');
+    if (iTipo === -1 || iNome === -1 || iQtd === -1) {
+      _mostrarAlertImport('error', 'Colunas obrigatórias não encontradas. Esperado: tipo, nome_produto, quantidade');
       return;
     }
+    const tiposValidos = ['entrada', 'saida', 'ajuste'];
     lines.slice(1).forEach((line, idx) => {
-      const cols    = _parseCSVLine(line);
-      const nomeProd= (cols[iNome] || '').replace(/['"]/g,'').trim();
-      const qtd     = parseInt(cols[iQtd]  || '0', 10);
-      const min     = iMin !== -1 ? parseInt(cols[iMin] || '0', 10) : null;
-      const max     = iMax !== -1 ? parseInt(cols[iMax] || '0', 10) : null;
-      if (!nomeProd) return;
+      const cols     = _parseCSVLine(line);
+      const tipo     = (cols[iTipo]  || '').replace(/['"]/g,'').trim().toLowerCase();
+      const nomeProd = (cols[iNome]  || '').replace(/['"]/g,'').trim();
+      const qtdRaw   = (cols[iQtd]   || '').replace(/['"]/g,'').trim();
+      const forn     = iForn !== -1  ? (cols[iForn] || '').replace(/['"]/g,'').trim() : '';
+      const dataC    = iData !== -1  ? (cols[iData] || '').replace(/['"]/g,'').trim() : '';
+      const vlrRaw   = iVlr  !== -1  ? (cols[iVlr]  || '').replace(/['"]/g,'').trim() : '';
+      const obs      = iObs  !== -1  ? (cols[iObs]  || '').replace(/['"]/g,'').trim() : '';
+      if (!nomeProd && !tipo) return; // linha vazia
+      if (!tiposValidos.includes(tipo)) {
+        erros.push(`Linha ${idx+2}: tipo "${tipo}" inválido. Use: entrada, saida ou ajuste.`); return;
+      }
+      if (!nomeProd) { erros.push(`Linha ${idx+2}: nome_produto em branco.`); return; }
+      const qtd = parseInt(qtdRaw, 10);
+      if (isNaN(qtd) || qtd < 0) { erros.push(`Linha ${idx+2}: quantidade inválida "${qtdRaw}".`); return; }
       const prod = state.produtos.find(p => p.nome.toLowerCase() === nomeProd.toLowerCase());
       if (!prod) { erros.push(`Linha ${idx+2}: produto "${nomeProd}" não encontrado.`); return; }
-      _importDados.push({ prodId: prod.id, nomeProd: prod.nome, qtd, min, max });
+      const valorUnit = vlrRaw ? parseFloat(vlrRaw.replace(',', '.')) || null : null;
+      _importDados.push({ prodId: prod.id, nomeProd: prod.nome, tipo, qtd, forn, dataC, valorUnit, obs });
     });
   }
 
@@ -3978,14 +3993,21 @@ function _mostrarPreviewImport(erros) {
       tbody.appendChild(tr);
     });
   } else {
-    thead.innerHTML = '<tr><th>Produto</th><th>Quantidade</th><th>Mínimo</th><th>Máximo</th></tr>';
+    const tipoLabel = { entrada: '⬆ Entrada', saida: '⬇ Saída', ajuste: '✎ Ajuste' };
+    thead.innerHTML = '<tr><th>Tipo</th><th>Produto</th><th>Qtd</th><th>Fornecedor</th><th>Data compra</th><th>Vlr. unit.</th><th>Obs.</th></tr>';
     _importDados.forEach(row => {
       const tr = document.createElement('tr');
+      const vlrFmt = row.valorUnit !== null
+        ? row.valorUnit.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})
+        : '—';
       tr.innerHTML = `
+        <td><span style="font-size:.78rem;font-weight:700;">${tipoLabel[row.tipo] || row.tipo}</span></td>
         <td><strong>${escapeHtml(row.nomeProd)}</strong></td>
         <td>${row.qtd}</td>
-        <td>${row.min !== null ? row.min : '—'}</td>
-        <td>${row.max !== null ? row.max : '—'}</td>`;
+        <td style="font-size:.8rem;">${escapeHtml(row.forn) || '—'}</td>
+        <td style="font-size:.8rem;">${row.dataC || '—'}</td>
+        <td style="font-size:.8rem;">${vlrFmt}</td>
+        <td style="font-size:.8rem;">${escapeHtml(row.obs) || '—'}</td>`;
       tbody.appendChild(tr);
     });
   }
@@ -4019,11 +4041,25 @@ async function confirmarImport() {
       });
     } else {
       _importDados.forEach(row => {
-        const est = state.estoque[row.prodId] || { quantidade: 0, minimo: 5, maximo: 50 };
-        est.quantidade = row.qtd;
-        if (row.min !== null && !isNaN(row.min)) est.minimo = row.min;
-        if (row.max !== null && !isNaN(row.max)) est.maximo = row.max;
-        state.estoque[row.prodId] = est;
+        garantirEntradaEstoque(row.prodId);
+        const est = state.estoque[row.prodId];
+        let novoTotal;
+        if (row.tipo === 'entrada') {
+          novoTotal = est.quantidade + row.qtd;
+        } else if (row.tipo === 'saida') {
+          novoTotal = Math.max(0, est.quantidade - row.qtd);
+        } else { // ajuste
+          novoTotal = row.qtd;
+        }
+        est.quantidade = novoTotal;
+        registrarMovimento(
+          row.prodId,
+          row.tipo,
+          row.tipo === 'ajuste' ? novoTotal : row.qtd,
+          row.obs,
+          novoTotal,
+          { fornecedor: row.forn, dataCompra: row.dataC, valorUnit: row.valorUnit }
+        );
       });
     }
     await persistir();
