@@ -303,12 +303,12 @@
     <div id="loginAlert"></div>
     <div class="form-group">
       <label class="form-label">Login</label>
-      <input type="text" class="form-input" id="loginUser" placeholder="Seu login" />
+      <input type="text" class="form-input" id="loginUser" placeholder="Seu login" onkeydown="if(event.key==='Enter') fazerLogin()" />
     </div>
     <div class="form-group">
       <label class="form-label">Senha</label>
       <div class="input-senha-wrap">
-        <input type="password" class="form-input" id="loginPass" placeholder="Sua senha" />
+        <input type="password" class="form-input" id="loginPass" placeholder="Sua senha" onkeydown="if(event.key==='Enter') fazerLogin()" />
         <button type="button" class="btn-ver-senha" onclick="toggleSenha('loginPass',this)" tabindex="-1">👁</button>
       </div>
     </div>
