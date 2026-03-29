@@ -3815,6 +3815,233 @@ inicializar();
   document.addEventListener('mouseup',    parar, { passive: true });
   document.addEventListener('mouseleave', parar, { passive: true });
 })();
+/* ============================================================
+   MÓDULO DE IMPORTAÇÃO (CSV / XLSX)
+============================================================ */
+let _importDados = [];
+let _importTipo  = 'produtos'; // 'produtos' | 'estoque'
+
+function trocarAbaImport(tipo, btn) {
+  _importDados = [];
+  _importTipo  = tipo;
+  const inp = document.getElementById('importFileInput');
+  if (inp) inp.value = '';
+  const prev = document.getElementById('importPreviewArea');
+  if (prev) prev.style.display = 'none';
+  const alerta = document.getElementById('importAlertArea');
+  if (alerta) alerta.innerHTML = '';
+
+  document.querySelectorAll('#importTabProd, #importTabEst').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.getElementById('importDescProdutos').style.display = tipo === 'produtos' ? '' : 'none';
+  document.getElementById('importDescEstoque').style.display  = tipo === 'estoque'  ? '' : 'none';
+}
+
+function handleImportFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'csv') {
+    const reader = new FileReader();
+    reader.onload = e => processarCSVImport(e.target.result);
+    reader.readAsText(file, 'UTF-8');
+  } else if (ext === 'xlsx' || ext === 'xls') {
+    if (typeof XLSX === 'undefined') {
+      _mostrarAlertImport('error', 'Biblioteca XLSX não carregada. Verifique sua conexão.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wb  = XLSX.read(e.target.result, { type: 'array' });
+      const ws  = wb.Sheets[wb.SheetNames[0]];
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      processarCSVImport(csv);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    _mostrarAlertImport('error', 'Formato não suportado. Use .csv ou .xlsx');
+  }
+}
+
+function _parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQuotes = !inQuotes; }
+    else if (c === ',' && !inQuotes) { result.push(cur.trim()); cur = ''; }
+    else { cur += c; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function processarCSVImport(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) {
+    _mostrarAlertImport('error', 'Arquivo vazio ou sem dados.');
+    return;
+  }
+  const headers = _parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/['"]/g, '').trim());
+  _importDados = [];
+  const erros = [];
+
+  if (_importTipo === 'produtos') {
+    const iCat   = headers.indexOf('categoria');
+    const iNome  = headers.indexOf('nome');
+    const iDesc  = headers.indexOf('descricao');
+    const iPreco = headers.indexOf('preco');
+    if (iCat === -1 || iNome === -1 || iDesc === -1 || iPreco === -1) {
+      _mostrarAlertImport('error', 'Colunas obrigatórias não encontradas. Esperado: categoria, nome, descricao, preco');
+      return;
+    }
+    lines.slice(1).forEach((line, idx) => {
+      const cols    = _parseCSVLine(line);
+      const catNome = (cols[iCat]   || '').replace(/['"]/g,'').trim();
+      const nome    = (cols[iNome]  || '').replace(/['"]/g,'').trim();
+      const desc    = (cols[iDesc]  || '').replace(/['"]/g,'').trim();
+      const precoRaw= (cols[iPreco] || '').replace(/['"]/g,'').trim();
+      if (!nome) return;
+      const cat = state.categorias.find(c => c.nome.toLowerCase() === catNome.toLowerCase());
+      if (!cat) { erros.push(`Linha ${idx+2}: categoria "${catNome}" não encontrada.`); return; }
+      const precoNum = parseFloat(precoRaw.replace(',', '.'));
+      if (isNaN(precoNum)) { erros.push(`Linha ${idx+2}: preço inválido "${precoRaw}".`); return; }
+      _importDados.push({ catNome: cat.nome, categoriaId: cat.id, nome, desc, precoNum });
+    });
+  } else {
+    const iNome = headers.indexOf('nome_produto');
+    const iQtd  = headers.indexOf('quantidade');
+    const iMin  = headers.indexOf('minimo');
+    const iMax  = headers.indexOf('maximo');
+    if (iNome === -1 || iQtd === -1) {
+      _mostrarAlertImport('error', 'Colunas obrigatórias não encontradas. Esperado: nome_produto, quantidade');
+      return;
+    }
+    lines.slice(1).forEach((line, idx) => {
+      const cols    = _parseCSVLine(line);
+      const nomeProd= (cols[iNome] || '').replace(/['"]/g,'').trim();
+      const qtd     = parseInt(cols[iQtd]  || '0', 10);
+      const min     = iMin !== -1 ? parseInt(cols[iMin] || '0', 10) : null;
+      const max     = iMax !== -1 ? parseInt(cols[iMax] || '0', 10) : null;
+      if (!nomeProd) return;
+      const prod = state.produtos.find(p => p.nome.toLowerCase() === nomeProd.toLowerCase());
+      if (!prod) { erros.push(`Linha ${idx+2}: produto "${nomeProd}" não encontrado.`); return; }
+      _importDados.push({ prodId: prod.id, nomeProd: prod.nome, qtd, min, max });
+    });
+  }
+
+  _mostrarPreviewImport(erros);
+}
+
+function _mostrarAlertImport(tipo, msg) {
+  const el = document.getElementById('importAlertArea');
+  if (el) el.innerHTML = `<div class="alert alert-${tipo === 'error' ? 'error' : 'success'}" style="max-width:700px;">${msg}</div>`;
+}
+
+function _mostrarPreviewImport(erros) {
+  const area  = document.getElementById('importPreviewArea');
+  const thead = document.getElementById('importPreviewHead');
+  const tbody = document.getElementById('importPreviewBody');
+  const count = document.getElementById('importCount');
+  area.style.display = '';
+  thead.innerHTML = '';
+  tbody.innerHTML = '';
+
+  if (erros.length > 0) {
+    _mostrarAlertImport('error', erros.map(e => `• ${e}`).join('<br>'));
+  } else {
+    document.getElementById('importAlertArea').innerHTML = '';
+  }
+
+  if (_importDados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--cinza);">Nenhum dado válido encontrado.</td></tr>`;
+    count.textContent = '0 itens';
+    document.getElementById('btnConfirmarImport').disabled = true;
+    return;
+  }
+
+  document.getElementById('btnConfirmarImport').disabled = false;
+  count.textContent = `${_importDados.length} ${_importTipo === 'produtos' ? 'produto(s)' : 'item(ns) de estoque'}`;
+
+  if (_importTipo === 'produtos') {
+    thead.innerHTML = '<tr><th>Categoria</th><th>Nome</th><th>Descrição</th><th>Preço</th></tr>';
+    _importDados.forEach(row => {
+      const tr = document.createElement('tr');
+      const pFmt = row.precoNum.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+      tr.innerHTML = `
+        <td>${escapeHtml(row.catNome)}</td>
+        <td><strong>${escapeHtml(row.nome)}</strong></td>
+        <td style="font-size:.79rem;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(row.desc)}</td>
+        <td>${pFmt}</td>`;
+      tbody.appendChild(tr);
+    });
+  } else {
+    thead.innerHTML = '<tr><th>Produto</th><th>Quantidade</th><th>Mínimo</th><th>Máximo</th></tr>';
+    _importDados.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${escapeHtml(row.nomeProd)}</strong></td>
+        <td>${row.qtd}</td>
+        <td>${row.min !== null ? row.min : '—'}</td>
+        <td>${row.max !== null ? row.max : '—'}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+}
+
+async function confirmarImport() {
+  if (_importDados.length === 0) return;
+  const btn = document.getElementById('btnConfirmarImport');
+  btn.disabled = true;
+  btn.textContent = 'Importando…';
+  try {
+    if (_importTipo === 'produtos') {
+      _importDados.forEach(row => {
+        const existe = state.produtos.find(p =>
+          p.nome.toLowerCase() === row.nome.toLowerCase() && p.categoriaId === row.categoriaId);
+        if (existe) {
+          existe.descricao = row.desc;
+          existe.preco = row.precoNum.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        } else {
+          const novo = {
+            id: gerarId(),
+            categoriaId: row.categoriaId,
+            nome:        row.nome,
+            descricao:   row.desc,
+            preco:       row.precoNum.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}),
+            imagem:      ''
+          };
+          state.produtos.push(novo);
+          garantirEntradaEstoque(novo.id);
+        }
+      });
+    } else {
+      _importDados.forEach(row => {
+        const est = state.estoque[row.prodId] || { quantidade: 0, minimo: 5, maximo: 50 };
+        est.quantidade = row.qtd;
+        if (row.min !== null && !isNaN(row.min)) est.minimo = row.min;
+        if (row.max !== null && !isNaN(row.max)) est.maximo = row.max;
+        state.estoque[row.prodId] = est;
+      });
+    }
+    await persistir();
+    const n = _importDados.length;
+    _importDados = [];
+    document.getElementById('importPreviewArea').style.display = 'none';
+    document.getElementById('importFileInput').value = '';
+    _mostrarAlertImport('success', `✓ ${n} ${_importTipo === 'produtos' ? 'produto(s) importado(s)' : 'item(ns) de estoque atualizado(s)'} com sucesso!`);
+    renderTabelaProdutos();
+    renderTabelaEstoque();
+    mostrarToast(`Importação concluída! ${n} itens processados. ✓`, 'success');
+  } catch(e) {
+    _mostrarAlertImport('error', 'Erro ao importar: ' + (e.message || e));
+    btn.disabled = false;
+    btn.textContent = '✓ Confirmar importação';
+  }
+}
+
 // ── Expõe funções para o HTML (necessário com type="module") ──
 if (typeof abrirAba !== "undefined") window.abrirAba = abrirAba;
 if (typeof abrirAbaRelatorios !== "undefined") window.abrirAbaRelatorios = abrirAbaRelatorios;
@@ -3897,3 +4124,6 @@ if (typeof togglePedidoBody !== "undefined") window.togglePedidoBody = togglePed
 if (typeof trocarAbaImagem !== "undefined") window.trocarAbaImagem = trocarAbaImagem;
 if (typeof trocarAuthTab !== "undefined") window.trocarAuthTab = trocarAuthTab;
 if (typeof voltarCardapio !== "undefined") window.voltarCardapio = voltarCardapio;
+if (typeof trocarAbaImport !== "undefined") window.trocarAbaImport = trocarAbaImport;
+if (typeof handleImportFile !== "undefined") window.handleImportFile = handleImportFile;
+if (typeof confirmarImport !== "undefined") window.confirmarImport = confirmarImport;

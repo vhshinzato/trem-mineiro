@@ -16,6 +16,8 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <!-- SheetJS para leitura de arquivos Excel -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -346,6 +348,7 @@
       <button class="admin-tab admin-tab-clientes" data-tab="tabClientes" onclick="abrirAba('tabClientes', this)">Clientes</button>
       <button class="admin-tab admin-tab-whatsapp" data-tab="tabWhatsapp" onclick="abrirAba('tabWhatsapp', this)">Configurações</button>
       <button class="admin-tab admin-tab-usuarios" data-tab="tabUsuarios" onclick="abrirAba('tabUsuarios', this)">Usuários</button>
+      <button class="admin-tab" data-tab="tabImportar" onclick="abrirAba('tabImportar', this)">📥 Importar</button>
     </div>
   </div>
 
@@ -792,6 +795,59 @@
         </table>
       </div>
     </div>
+
+    <!-- ABA: IMPORTAR -->
+    <div id="tabImportar" class="tab-panel">
+      <div class="admin-section-title" style="margin-bottom:1.4rem;">Importar dados via arquivo</div>
+
+      <!-- Sub-tabs -->
+      <div class="modal-auth-tabs" style="max-width:340px;margin-bottom:1.6rem;">
+        <button class="modal-auth-tab active" id="importTabProd" onclick="trocarAbaImport('produtos', this)">🛒 Produtos</button>
+        <button class="modal-auth-tab" id="importTabEst"  onclick="trocarAbaImport('estoque',  this)">📦 Estoque</button>
+      </div>
+
+      <!-- Descrição Produtos -->
+      <div id="importDescProdutos" style="background:var(--creme);border-radius:var(--radius-sm);padding:1rem 1.2rem;margin-bottom:1.2rem;font-size:.83rem;color:var(--cafe-soft);">
+        <strong>Colunas obrigatórias:</strong> <code>categoria</code>, <code>nome</code>, <code>descricao</code>, <code>preco</code><br>
+        O nome da categoria deve existir no sistema. Preço no formato <code>38.00</code> ou <code>38,00</code>.<br>
+        Produtos duplicados (mesmo nome + categoria) terão preço e descrição atualizados.<br>
+        <a href="./modelos/produtos.csv" download style="color:var(--terra);font-weight:700;margin-top:.5rem;display:inline-block;">⬇ Baixar modelo produtos.csv</a>
+      </div>
+
+      <!-- Descrição Estoque -->
+      <div id="importDescEstoque" style="display:none;background:var(--creme);border-radius:var(--radius-sm);padding:1rem 1.2rem;margin-bottom:1.2rem;font-size:.83rem;color:var(--cafe-soft);">
+        <strong>Colunas obrigatórias:</strong> <code>nome_produto</code>, <code>quantidade</code><br>
+        Colunas opcionais: <code>minimo</code>, <code>maximo</code><br>
+        O nome do produto deve ser exatamente igual ao cadastrado no sistema (case insensitive).<br>
+        <a href="./modelos/estoque.csv" download style="color:var(--terra);font-weight:700;margin-top:.5rem;display:inline-block;">⬇ Baixar modelo estoque.csv</a>
+      </div>
+
+      <!-- Upload -->
+      <label class="upload-drop-area" for="importFileInput" style="max-width:480px;margin-bottom:.8rem;">
+        <div class="upload-icon">📂</div>
+        <div class="upload-text">Clique ou arraste o arquivo aqui</div>
+        <div class="upload-hint">Formatos aceitos: .csv · .xlsx · .xls</div>
+      </label>
+      <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="handleImportFile(this)" />
+
+      <!-- Alertas -->
+      <div id="importAlertArea" style="max-width:700px;margin-bottom:.8rem;"></div>
+
+      <!-- Preview -->
+      <div id="importPreviewArea" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;margin-bottom:.8rem;">
+          <div style="font-size:.9rem;font-weight:700;color:var(--cafe);">Prévia — <span id="importCount"></span></div>
+          <button id="btnConfirmarImport" class="btn btn-primary" onclick="confirmarImport()">✓ Confirmar importação</button>
+        </div>
+        <div class="admin-table-wrap" style="max-width:800px;">
+          <table class="admin-table">
+            <thead id="importPreviewHead"></thead>
+            <tbody id="importPreviewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /tabImportar -->
 
   </div><!-- /admin-content -->
 </div><!-- /adminPanel -->
