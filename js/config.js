@@ -1,5 +1,6 @@
 /* js/config.js — Configurações do Trem Mineiro */
-export { SUPA_URL, SUPA_KEY } from './env.js';
+export const SUPA_URL = 'https://lqmrytugtfhtflpmcqsz.supabase.co';
+export const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxbXJ5dHVndGZodGZscG1jcXN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3OTY4NzcsImV4cCI6MjA5MDM3Mjg3N30.Fxj88Jnvl-1HHk5USCq62m6Qj2EcTwsJff0-SZbXEow';
 
 /* ============================================================
    CONFIGURAÇÃO EDITÁVEL
