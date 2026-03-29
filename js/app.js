@@ -615,6 +615,30 @@ function excluirProduto(prodId) {
    GERENCIAMENTO DE IMAGEM DO PRODUTO (URL + Upload)
 ============================================================ */
 
+// Comprime uma imagem para max 800x800 JPEG 80% via Canvas
+function comprimirImagem(file, maxW, maxH, qualidade) {
+  return new Promise(function(resolve) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        let w = img.width, h = img.height;
+        if (w > maxW || h > maxH) {
+          const ratio = Math.min(maxW / w, maxH / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', qualidade));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 // Guarda o base64 da imagem carregada do arquivo (temporário, por modal aberto)
 let _imagemBase64 = null;
 // Indica qual aba está ativa: 'url' ou 'upload'
@@ -652,25 +676,21 @@ function handleFileUpload(input) {
   if (!file) return;
 
   // Validação de tamanho: máx 5 MB
-  if (file.size > 5 * 1024 * 1024) {
-    mostrarToast('Imagem muito grande! Máximo 5 MB.', 'error');
+  if (file.size > 10 * 1024 * 1024) {
+    mostrarToast('Imagem muito grande! Máximo 10 MB.', 'error');
     input.value = '';
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    _imagemBase64 = e.target.result; // string base64 completa (data:image/...;base64,...)
+  comprimirImagem(file, 800, 800, 0.80).then(function(base64) {
+    _imagemBase64 = base64;
     document.getElementById('uploadFileName').textContent = '✔ ' + file.name;
-
-    // Exibe preview
     const wrap = document.getElementById('imgPreviewWrap');
     wrap.innerHTML = `
       <img src="${_imagemBase64}" alt="preview" />
       <button class="preview-remove" title="Remover imagem" onclick="removerImagem()">✕</button>
     `;
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
 // Remove a imagem atual do preview
@@ -848,20 +868,17 @@ let _logoBase64Temp = null;
 function handleLogoUpload(input) {
   const file = input.files && input.files[0];
   if (!file) return;
-  if (file.size > 2 * 1024 * 1024) {
-    mostrarToast('Imagem muito grande! Máximo 2 MB.', 'error');
+  if (file.size > 10 * 1024 * 1024) {
+    mostrarToast('Imagem muito grande! Máximo 10 MB.', 'error');
     input.value = '';
     return;
   }
-  const reader = new FileReader();
-  reader.onload = e => {
-    _logoBase64Temp = e.target.result;
-    // Atualiza preview do admin
+  comprimirImagem(file, 400, 400, 0.85).then(function(base64) {
+    _logoBase64Temp = base64;
     const prev = document.getElementById('logoPreviewAdmin');
     prev.innerHTML = `<img src="${_logoBase64Temp}" alt="logo" />`;
     document.getElementById('logoFileName').textContent = '✔ ' + file.name;
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
 function salvarLogo() {
@@ -2677,9 +2694,12 @@ function renderFornecedoresRel() {
 ============================================================ */
 
 let _filtroPedidos = 'todos';
+const _PEDIDOS_POR_PAGINA = 50;
+let _pedidosPagina = 1;
 
 function filtrarPedidos(status, btn) {
   _filtroPedidos = status;
+  _pedidosPagina = 1;
   document.querySelectorAll('.pedidos-filtros .estoque-filtro-btn')
     .forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -2715,6 +2735,9 @@ function renderTabelaPedidos() {
   }
 
   wrap.innerHTML = '';
+  const total = lista.length;
+  lista = lista.slice(0, _pedidosPagina * _PEDIDOS_POR_PAGINA);
+
   lista.forEach(ped => {
     const data  = new Date(ped.data);
     const hora  = data.toLocaleDateString('pt-BR') + ' às ' +
@@ -2780,6 +2803,15 @@ function renderTabelaPedidos() {
     `;
     wrap.appendChild(div);
   });
+
+  if (lista.length < total) {
+    const btnMais = document.createElement('button');
+    btnMais.className = 'btn btn-outline';
+    btnMais.style.cssText = 'display:block;margin:1rem auto;width:100%;max-width:300px;';
+    btnMais.textContent = `Carregar mais (${total - lista.length} restantes)`;
+    btnMais.onclick = function() { _pedidosPagina++; renderTabelaPedidos(); };
+    wrap.appendChild(btnMais);
+  }
 }
 
 function togglePedidoBody(pedId) {
