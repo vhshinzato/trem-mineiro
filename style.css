@@ -80,7 +80,7 @@
       flex-shrink: 0;
       background: rgba(255, 255, 255, 0.95);
       border-radius: 50%;
-      padding: 2rem;
+      padding: 0;
       border: 2.5px solid rgba(201, 145, 58, 0.55);
       box-shadow:
         0 0 0 6px rgba(201, 145, 58, 0.12),
