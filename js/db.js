@@ -107,7 +107,7 @@ export async function carregarDoSupabase() {
   }
   if (!state.config.heroMedia) state.config.heroMedia = [];
 
-  if (!cats || !cats.length) await syncToSupabase();
+  // Não sincroniza automaticamente — admin faz isso manualmente após logar
 }
 
 /* ── FASE 2: carrega dados do painel admin (lazy) ─────── */
