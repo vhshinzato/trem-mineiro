@@ -30,7 +30,12 @@ export const state = {
   sessaoCliente: carregarDados('sm_sessao_cliente', null),
 };
 
-export const sb = createClient(SUPA_URL, SUPA_KEY);
+export const sb = createClient(SUPA_URL, SUPA_KEY, {
+  auth: {
+    storage: sessionStorage,
+    persistSession: true,
+  }
+});
 
 export async function loginAdmin(email, senha) {
   return sb.auth.signInWithPassword({ email, password: senha });
