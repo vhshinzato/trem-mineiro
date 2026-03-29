@@ -3852,6 +3852,7 @@ if (typeof salvarMeusDados !== "undefined") window.salvarMeusDados = salvarMeusD
 if (typeof salvarProduto !== "undefined") window.salvarProduto = salvarProduto;
 if (typeof salvarUsuario !== "undefined") window.salvarUsuario = salvarUsuario;
 if (typeof salvarWhatsapp !== "undefined") window.salvarWhatsapp = salvarWhatsapp;
+if (typeof salvarManualSupabase !== "undefined") window.salvarManualSupabase = salvarManualSupabase;
 if (typeof setAtalho !== "undefined") window.setAtalho = setAtalho;
 if (typeof setDescontoTipo !== "undefined") window.setDescontoTipo = setDescontoTipo;
 if (typeof sincronizarFornecedorTexto !== "undefined") window.sincronizarFornecedorTexto = sincronizarFornecedorTexto;
