@@ -1250,9 +1250,9 @@ function ajusteDigitado(prodId, input) {
   est.quantidade = novo;
   registrarMovimento(prodId, tipo, Math.abs(diff), 'Digitado manualmente', novo);
   persistir();
+  renderTabelaEstoque();
   renderResumoEstoque();
   renderHistorico();
-  input.value = novo; // garante valor limpo (ex: NaN ou negativo)
   mostrarToast(`Estoque atualizado para ${novo} un. ✓`, 'success');
 }
 
