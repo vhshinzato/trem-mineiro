@@ -3819,62 +3819,63 @@ inicializar();
    DOWNLOAD DE MODELOS EXCEL
 ============================================================ */
 function baixarModeloExcel(tipo) {
-  if (typeof XLSX === 'undefined') {
-    mostrarToast('Biblioteca XLSX não carregada. Verifique sua conexão.', 'error');
-    return;
-  }
-
-  let dados, nomeArquivo, nomePlanilha;
+  let cabecalho, linhas, nomeArquivo;
 
   if (tipo === 'produtos') {
-    nomePlanilha  = 'Produtos';
-    nomeArquivo   = 'modelo_produtos.xlsx';
-    dados = [
-      ['categoria', 'nome', 'descricao', 'preco'],
-      ['Cafés', 'Café Especial Cerrado', 'Grãos 100% arábica do Cerrado Mineiro, torra média, notas de caramelo e frutas vermelhas.', 38.00],
-      ['Cafés', 'Café Torrado & Moído Premium', 'Blend exclusivo de fazendas da Serra da Mantiqueira. Aroma intenso, sabor aveludado.', 29.90],
-      ['Cafés', 'Café em Grãos Chapada', 'Torra escura da Chapada Gaúcha, ideal para espresso cremoso e encorpado.', 45.00],
-      ['Doces de Leite', 'Doce de Leite Cremoso', 'Feito artesanalmente com leite integral de vacas criadas no campo. Pote 400g.', 19.90],
-      ['Doces de Leite', 'Doce de Leite com Canela', 'A clássica receita mineira com toque especial de canela da terra. Pote 300g.', 17.90],
-      ['Queijos', 'Queijo Minas Frescal', 'Queijo macio e levemente salgado, produzido artesanalmente com leite cru pasteurizado.', 22.50],
-      ['Queijos', 'Queijo da Canastra', 'Patrimônio imaterial de Minas, maturado por 45 dias. Sabor marcante e textura firme.', 68.00],
-      ['Kits', 'Kit Café da Manhã Mineiro', 'Café especial + doce de leite cremoso + queijo frescal + biscoitinhos de polvilho. Para 2 pessoas.', 89.90],
-      ['Kits', 'Kit Presente Gourmet', 'Caixa presente com 2 doces de leite, 1 queijo da canastra, 1 café especial e embalagem exclusiva.', 149.00],
+    nomeArquivo = 'modelo_produtos.xls';
+    cabecalho   = ['categoria', 'nome', 'descricao', 'preco'];
+    linhas = [
+      ['Cafés', 'Café Especial Cerrado', 'Grãos 100% arábica do Cerrado Mineiro, torra média, notas de caramelo e frutas vermelhas.', '38.00'],
+      ['Cafés', 'Café Torrado & Moído Premium', 'Blend exclusivo de fazendas da Serra da Mantiqueira. Aroma intenso, sabor aveludado.', '29.90'],
+      ['Cafés', 'Café em Grãos Chapada', 'Torra escura da Chapada Gaúcha, ideal para espresso cremoso e encorpado.', '45.00'],
+      ['Doces de Leite', 'Doce de Leite Cremoso', 'Feito artesanalmente com leite integral de vacas criadas no campo. Pote 400g.', '19.90'],
+      ['Doces de Leite', 'Doce de Leite com Canela', 'A clássica receita mineira com toque especial de canela da terra. Pote 300g.', '17.90'],
+      ['Queijos', 'Queijo Minas Frescal', 'Queijo macio e levemente salgado, produzido artesanalmente com leite cru pasteurizado.', '22.50'],
+      ['Queijos', 'Queijo da Canastra', 'Patrimônio imaterial de Minas, maturado por 45 dias. Sabor marcante e textura firme.', '68.00'],
+      ['Kits', 'Kit Café da Manhã Mineiro', 'Café especial + doce de leite cremoso + queijo frescal + biscoitinhos de polvilho. Para 2 pessoas.', '89.90'],
+      ['Kits', 'Kit Presente Gourmet', 'Caixa presente com 2 doces de leite, 1 queijo da canastra, 1 café especial e embalagem exclusiva.', '149.00'],
     ];
   } else {
-    nomePlanilha  = 'Estoque';
-    nomeArquivo   = 'modelo_estoque.xlsx';
-    dados = [
-      ['tipo', 'nome_produto', 'quantidade', 'fornecedor', 'data_compra', 'valor_unitario', 'observacao'],
-      ['entrada', 'Café Especial Cerrado', 20, 'Fazenda Serra Verde', '2026-03-28', 18.00, 'Lote março 2026'],
-      ['entrada', 'Queijo da Canastra', 10, 'Laticínios Canastra Ltda.', '2026-03-28', 32.00, 'Maturado 45 dias'],
-      ['saida', 'Doce de Leite Cremoso', 5, '', '', '', 'Vendas do fim de semana'],
-      ['ajuste', 'Café Torrado & Moído Premium', 8, '', '', '', 'Contagem física - ajuste manual'],
+    nomeArquivo = 'modelo_estoque.xls';
+    cabecalho   = ['tipo', 'nome_produto', 'quantidade', 'fornecedor', 'data_compra', 'valor_unitario', 'observacao'];
+    linhas = [
+      ['entrada', 'Café Especial Cerrado', '20', 'Fazenda Serra Verde', '2026-03-28', '18.00', 'Lote março 2026'],
+      ['entrada', 'Queijo da Canastra', '10', 'Laticínios Canastra Ltda.', '2026-03-28', '32.00', 'Maturado 45 dias'],
+      ['saida', 'Doce de Leite Cremoso', '5', '', '', '', 'Vendas do fim de semana'],
+      ['ajuste', 'Café Torrado & Moído Premium', '8', '', '', '', 'Contagem física - ajuste manual'],
     ];
   }
 
-  const ws = XLSX.utils.aoa_to_sheet(dados);
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-  // Larguras de coluna
-  if (tipo === 'produtos') {
-    ws['!cols'] = [{ wch: 18 }, { wch: 32 }, { wch: 70 }, { wch: 10 }];
-  } else {
-    ws['!cols'] = [{ wch: 10 }, { wch: 32 }, { wch: 12 }, { wch: 28 }, { wch: 14 }, { wch: 15 }, { wch: 35 }];
-  }
+  const thCells = cabecalho.map(h => `<th>${esc(h)}</th>`).join('');
+  const trRows  = linhas.map((row, i) => {
+    const bg = i % 2 === 0 ? '#FFFFFF' : '#F5EDE8';
+    const tds = row.map(c => `<td style="background:${bg};">${esc(c)}</td>`).join('');
+    return `<tr>${tds}</tr>`;
+  }).join('');
 
-  // Tabela nativa do Excel (aplica estilo automático com cabeçalho e listras)
-  const nRows = dados.length;
-  const nCols = dados[0].length;
-  const lastCol = String.fromCharCode(64 + nCols);
-  ws['!tables'] = [{
-    ref:  `A1:${lastCol}${nRows}`,
-    name: nomePlanilha,
-    style: { theme: 'TableStyleMedium2', showRowStripes: true }
-  }];
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<style>
+  table { border-collapse: collapse; font-family: Calibri, Arial, sans-serif; font-size: 11pt; }
+  th { background: #2C1810; color: #FFFFFF; font-weight: bold; padding: 6px 12px;
+       border: 1px solid #5a3825; text-align: left; white-space: nowrap; }
+  td { padding: 5px 12px; border: 1px solid #D9C4B8; }
+</style>
+</head>
+<body><table><thead><tr>${thCells}</tr></thead><tbody>${trRows}</tbody></table></body>
+</html>`;
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, nomePlanilha);
-  XLSX.writeFile(wb, nomeArquivo);
+  const blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = nomeArquivo;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ============================================================
