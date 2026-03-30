@@ -811,7 +811,7 @@
         <strong>Colunas obrigatórias:</strong> <code>categoria</code>, <code>nome</code>, <code>descricao</code>, <code>preco</code><br>
         O nome da categoria deve existir no sistema. Preço no formato <code>38.00</code> ou <code>38,00</code>.<br>
         Produtos duplicados (mesmo nome + categoria) terão preço e descrição atualizados.<br>
-        <a href="./modelos/produtos.csv" download style="color:var(--terra);font-weight:700;margin-top:.5rem;display:inline-block;">⬇ Baixar modelo produtos.csv</a>
+        <button onclick="baixarModeloExcel('produtos')" style="background:none;border:none;color:var(--terra);font-weight:700;cursor:pointer;font-size:.83rem;padding:0;margin-top:.5rem;display:inline-block;text-decoration:underline;">⬇ Baixar modelo produtos.xlsx</button>
       </div>
 
       <!-- Descrição Estoque -->
@@ -821,7 +821,7 @@
         <strong>Valores para <code>tipo</code>:</strong> <code>entrada</code> · <code>saida</code> · <code>ajuste</code><br>
         Data no formato <code>AAAA-MM-DD</code> (ex: 2026-03-28). Valor unitário com ponto decimal (ex: 18.00).<br>
         Cada linha é uma movimentação — o histórico é registrado automaticamente.<br>
-        <a href="./modelos/estoque.csv" download style="color:var(--terra);font-weight:700;margin-top:.5rem;display:inline-block;">⬇ Baixar modelo estoque.csv</a>
+        <button onclick="baixarModeloExcel('estoque')" style="background:none;border:none;color:var(--terra);font-weight:700;cursor:pointer;font-size:.83rem;padding:0;margin-top:.5rem;display:inline-block;text-decoration:underline;">⬇ Baixar modelo estoque.xlsx</button>
       </div>
 
       <!-- Upload -->
