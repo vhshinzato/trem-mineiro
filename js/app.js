@@ -3862,23 +3862,15 @@ function baixarModeloExcel(tipo) {
     ws['!cols'] = [{ wch: 10 }, { wch: 32 }, { wch: 12 }, { wch: 28 }, { wch: 14 }, { wch: 15 }, { wch: 35 }];
   }
 
-  // Formata como tabela Excel
+  // Tabela nativa do Excel (aplica estilo automático com cabeçalho e listras)
   const nRows = dados.length;
   const nCols = dados[0].length;
   const lastCol = String.fromCharCode(64 + nCols);
-  ws['!autofilter'] = { ref: `A1:${lastCol}${nRows}` };
-
-  // Estilo do cabeçalho (negrito + fundo marrom)
-  for (let c = 0; c < nCols; c++) {
-    const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
-    if (cell) {
-      cell.s = {
-        font:    { bold: true, color: { rgb: 'FFFFFF' } },
-        fill:    { fgColor: { rgb: '2C1810' } },
-        alignment: { horizontal: 'center' }
-      };
-    }
-  }
+  ws['!tables'] = [{
+    ref:  `A1:${lastCol}${nRows}`,
+    name: nomePlanilha,
+    style: { theme: 'TableStyleMedium2', showRowStripes: true }
+  }];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, nomePlanilha);
