@@ -907,6 +907,16 @@
       <div class="error-msg" id="prodPrecoErr"></div>
     </div>
     <div class="form-group">
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;font-weight:700;color:var(--cafe);">
+        <input type="checkbox" id="prodPromoAtiva" onchange="togglePromo(this)" style="width:16px;height:16px;accent-color:var(--terra);cursor:pointer;" />
+        Valor promocional
+      </label>
+      <div id="prodPromoWrap" style="display:none;margin-top:.6rem;">
+        <input type="text" class="form-input" id="prodPrecoPromo" placeholder="Novo valor promocional (R$)" oninput="mascaraPreco(this)" style="max-width:260px;" />
+        <p style="font-size:.75rem;color:var(--cinza);margin-top:.3rem;">O preço original ficará riscado no catálogo e o novo valor aparecerá em destaque.</p>
+      </div>
+    </div>
+    <div class="form-group">
       <label class="form-label">Imagem do Produto</label>
 
       <!-- Seletor de modo de imagem -->

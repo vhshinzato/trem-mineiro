@@ -412,6 +412,33 @@
       color: var(--terra);
     }
 
+    .product-price-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: .1rem;
+      margin-top: .2rem;
+    }
+    .product-price-promo-badge {
+      display: inline-block;
+      background: var(--terra);
+      color: #fff;
+      font-size: .62rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      padding: .15rem .45rem;
+      border-radius: 20px;
+      width: fit-content;
+    }
+    .product-price-old {
+      font-size: .88rem;
+      color: var(--cinza);
+      text-decoration: line-through;
+    }
+    .product-price-promo {
+      font-size: 1.25rem;
+      color: var(--terra);
+    }
+
     /* Estado vazio */
     .empty-state {
       grid-column: 1/-1;

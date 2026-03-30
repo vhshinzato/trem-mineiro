@@ -69,7 +69,14 @@ function renderCardapio(filtroNome = '', filtroCat = '') {
           <div class="product-body">
             <div class="product-name">${escapeHtml(p.nome)}</div>
             <div class="product-desc">${escapeHtml(p.descricao)}</div>
-            <div class="product-price">${escapeHtml(p.preco)}</div>
+            ${p.precoPromo
+              ? `<div class="product-price-wrap">
+                   <span class="product-price-promo-badge">PROMOÇÃO</span>
+                   <span class="product-price-old">${escapeHtml(p.preco)}</span>
+                   <span class="product-price product-price-promo">${escapeHtml(p.precoPromo)}</span>
+                 </div>`
+              : `<div class="product-price">${escapeHtml(p.preco)}</div>`
+            }
           </div>
         `;
         grid.appendChild(card);
@@ -490,16 +497,23 @@ function renderFiltroCategorias() {
   });
 }
 
+function togglePromo(checkbox) {
+  document.getElementById('prodPromoWrap').style.display = checkbox.checked ? '' : 'none';
+  if (!checkbox.checked) document.getElementById('prodPrecoPromo').value = '';
+}
+
 function abrirModalProduto(prodId) {
   // Reseta estado de imagem
   _imagemBase64 = null;
   _imgAbaAtiva = 'url';
 
   // Limpa campos
-  ['prodNome','prodDesc','prodPreco','prodImagem'].forEach(id => {
+  ['prodNome','prodDesc','prodPreco','prodImagem','prodPrecoPromo'].forEach(id => {
     document.getElementById(id).value = '';
     document.getElementById(id).classList.remove('error');
   });
+  document.getElementById('prodPromoAtiva').checked = false;
+  document.getElementById('prodPromoWrap').style.display = 'none';
   ['prodNomeErr','prodDescErr','prodPrecoErr','prodCategoriaErr'].forEach(id => {
     document.getElementById(id).textContent = '';
   });
@@ -524,6 +538,11 @@ function abrirModalProduto(prodId) {
     document.getElementById('prodNome').value      = p.nome;
     document.getElementById('prodDesc').value      = p.descricao;
     document.getElementById('prodPreco').value     = p.preco.replace('R$ ', '');
+    if (p.precoPromo) {
+      document.getElementById('prodPromoAtiva').checked = true;
+      document.getElementById('prodPromoWrap').style.display = '';
+      document.getElementById('prodPrecoPromo').value = p.precoPromo.replace('R$ ', '');
+    }
 
     if (p.imagem) {
       // Se for base64, mostrar na aba Upload; se for URL, mostrar na aba URL
@@ -554,11 +573,13 @@ function abrirModalProduto(prodId) {
 }
 
 async function salvarProduto() {
-  const catId = document.getElementById('prodCategoria').value;
-  const nome  = document.getElementById('prodNome').value.trim();
-  const desc  = document.getElementById('prodDesc').value.trim();
-  const preco = document.getElementById('prodPreco').value.trim();
-  const editId= document.getElementById('prodEditId').value;
+  const catId     = document.getElementById('prodCategoria').value;
+  const nome      = document.getElementById('prodNome').value.trim();
+  const desc      = document.getElementById('prodDesc').value.trim();
+  const preco     = document.getElementById('prodPreco').value.trim();
+  const editId    = document.getElementById('prodEditId').value;
+  const promoAtiva= document.getElementById('prodPromoAtiva').checked;
+  const precoPromoRaw = promoAtiva ? document.getElementById('prodPrecoPromo').value.trim() : '';
 
   let valido = true;
   const erros = { prodCategoriaErr: !catId, prodNomeErr: !nome, prodDescErr: !desc, prodPrecoErr: !preco };
@@ -571,6 +592,9 @@ async function salvarProduto() {
   if (!valido) return;
 
   const precoFormatado = 'R$ ' + (preco.includes(',') ? preco : parseFloat(preco).toFixed(2).replace('.',','));
+  const precoPromoFormatado = precoPromoRaw
+    ? 'R$ ' + (precoPromoRaw.includes(',') ? precoPromoRaw : parseFloat(precoPromoRaw).toFixed(2).replace('.',','))
+    : null;
 
   // Upload da imagem para o Storage se houver arquivo selecionado
   let img = obterImagemFinal();
@@ -581,10 +605,10 @@ async function salvarProduto() {
       img = await uploadImagemStorage(_imagemBase64, 'produtos', prodId);
       if (editId) {
         const idx = state.produtos.findIndex(p => p.id === editId);
-        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img };
+        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, imagem: img };
         mostrarToast('Produto atualizado!', 'success');
       } else {
-        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img });
+        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, imagem: img });
         garantirEntradaEstoque();
         mostrarToast('Produto criado!', 'success');
       }
@@ -595,10 +619,10 @@ async function salvarProduto() {
   } else {
     if (editId) {
       const idx = state.produtos.findIndex(p => p.id === editId);
-      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img };
+      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, imagem: img };
       mostrarToast('Produto atualizado!', 'success');
     } else {
-      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, imagem: img });
+      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, imagem: img });
       garantirEntradaEstoque();
       mostrarToast('Produto criado!', 'success');
     }
@@ -1488,10 +1512,17 @@ function abrirDetalhe(prodId) {
     imgWrap.innerHTML = `<div class="detalhe-img-placeholder">🛍️</div>`;
   }
 
-  document.getElementById('detalheCat').textContent   = cat ? cat.nome : '';
-  document.getElementById('detalheNome').textContent  = p.nome;
-  document.getElementById('detalheDesc').textContent  = p.descricao;
-  document.getElementById('detalhePreco').textContent = p.preco;
+  document.getElementById('detalheCat').textContent  = cat ? cat.nome : '';
+  document.getElementById('detalheNome').textContent = p.nome;
+  document.getElementById('detalheDesc').textContent = p.descricao;
+  if (p.precoPromo) {
+    document.getElementById('detalhePreco').innerHTML =
+      `<span class="product-price-promo-badge" style="font-size:.7rem;vertical-align:middle;margin-right:.4rem;">PROMOÇÃO</span>` +
+      `<span class="product-price-old" style="font-size:1rem;">${escapeHtml(p.preco)}</span> ` +
+      `<span style="color:var(--terra);font-weight:800;">${escapeHtml(p.precoPromo)}</span>`;
+  } else {
+    document.getElementById('detalhePreco').textContent = p.preco;
+  }
   document.getElementById('detalheQtdNum').textContent = _detalheQtd;
 
   // Disponível = state.estoque total − já no state.carrinho
@@ -4226,6 +4257,7 @@ if (typeof togglePedidoBody !== "undefined") window.togglePedidoBody = togglePed
 if (typeof trocarAbaImagem !== "undefined") window.trocarAbaImagem = trocarAbaImagem;
 if (typeof trocarAuthTab !== "undefined") window.trocarAuthTab = trocarAuthTab;
 if (typeof voltarCardapio !== "undefined") window.voltarCardapio = voltarCardapio;
+if (typeof togglePromo !== "undefined") window.togglePromo = togglePromo;
 if (typeof trocarAbaImport !== "undefined") window.trocarAbaImport = trocarAbaImport;
 if (typeof handleImportFile !== "undefined") window.handleImportFile = handleImportFile;
 if (typeof confirmarImport !== "undefined") window.confirmarImport = confirmarImport;
