@@ -1,5 +1,5 @@
-tipo,nome_produto,quantidade,fornecedor,data_compra,valor_unitario,observacao
-entrada,Café Especial Cerrado,20,Fazenda Serra Verde,2026-03-28,18.00,Lote março 2026
-entrada,Queijo da Canastra,10,Laticínios Canastra Ltda.,2026-03-28,32.00,Maturado 45 dias
-saida,Doce de Leite Cremoso,5,,,, Vendas do fim de semana
-ajuste,Café Torrado & Moído Premium,8,,,,Contagem física - ajuste manual
+tipo;nome_produto;quantidade;fornecedor;data_compra;valor_unitario;observacao
+entrada;Café Especial Cerrado;20;Fazenda Serra Verde;2026-03-28;18.00;Lote março 2026
+entrada;Queijo da Canastra;10;Laticínios Canastra Ltda.;2026-03-28;32.00;Maturado 45 dias
+saida;Doce de Leite Cremoso;5;;;;Vendas do fim de semana
+ajuste;Café Torrado & Moído Premium;8;;;;Contagem física - ajuste manual

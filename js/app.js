@@ -3864,14 +3864,14 @@ function handleImportFile(input) {
   }
 }
 
-function _parseCSVLine(line) {
+function _parseCSVLine(line, sep) {
   const result = [];
   let cur = '';
   let inQuotes = false;
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
     if (c === '"') { inQuotes = !inQuotes; }
-    else if (c === ',' && !inQuotes) { result.push(cur.trim()); cur = ''; }
+    else if (c === sep && !inQuotes) { result.push(cur.trim()); cur = ''; }
     else { cur += c; }
   }
   result.push(cur.trim());
@@ -3880,11 +3880,14 @@ function _parseCSVLine(line) {
 
 function processarCSVImport(text) {
   const lines = text.split(/\r?\n/).filter(l => l.trim());
+  // Detecta separador: se a primeira linha tem mais ; do que , usa ;
+  const firstLine = lines[0] || '';
+  const sep = (firstLine.split(';').length >= firstLine.split(',').length) ? ';' : ',';
   if (lines.length < 2) {
     _mostrarAlertImport('error', 'Arquivo vazio ou sem dados.');
     return;
   }
-  const headers = _parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/['"]/g, '').trim());
+  const headers = _parseCSVLine(lines[0], sep).map(h => h.toLowerCase().replace(/['"]/g, '').trim());
   _importDados = [];
   const erros = [];
 
@@ -3898,7 +3901,7 @@ function processarCSVImport(text) {
       return;
     }
     lines.slice(1).forEach((line, idx) => {
-      const cols    = _parseCSVLine(line);
+      const cols    = _parseCSVLine(line, sep);
       const catNome = (cols[iCat]   || '').replace(/['"]/g,'').trim();
       const nome    = (cols[iNome]  || '').replace(/['"]/g,'').trim();
       const desc    = (cols[iDesc]  || '').replace(/['"]/g,'').trim();
@@ -3925,7 +3928,7 @@ function processarCSVImport(text) {
     }
     const tiposValidos = ['entrada', 'saida', 'ajuste'];
     lines.slice(1).forEach((line, idx) => {
-      const cols     = _parseCSVLine(line);
+      const cols     = _parseCSVLine(line, sep);
       const tipo     = (cols[iTipo]  || '').replace(/['"]/g,'').trim().toLowerCase();
       const nomeProd = (cols[iNome]  || '').replace(/['"]/g,'').trim();
       const qtdRaw   = (cols[iQtd]   || '').replace(/['"]/g,'').trim();
