@@ -1231,16 +1231,10 @@ function ajusteRapido(prodId, delta) {
   est.quantidade = novo;
   registrarMovimento(prodId, delta > 0 ? 'entrada' : 'saida', Math.abs(delta), 'Ajuste rápido', novo);
   persistir();
-  // Atualiza só o input da linha sem re-renderizar a tabela inteira
-  const inputs = document.querySelectorAll(`#estoqueTableBody .qtd-input`);
-  inputs.forEach(inp => {
-    if (inp.closest('tr') && inp.closest('tr').querySelector(`[onclick*="${prodId}"]`)) {
-      inp.value = novo;
-    }
-  });
   renderTabelaEstoque();
   renderResumoEstoque();
   renderHistorico();
+  mostrarToast(`Estoque atualizado para ${novo} un. ✓`, 'success');
 }
 
 // ── Ajuste por digitação direta ───────────────────────────────
