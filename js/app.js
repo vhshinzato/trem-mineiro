@@ -1550,7 +1550,16 @@ function abrirDetalhe(prodId) {
 
   const btnAdd = document.getElementById('btnAddCart');
   if (esgotado) {
-    btnAdd.outerHTML = `<div class="detalhe-esgotado" id="btnAddCart">🔴 ${noCarrinho > 0 ? 'Limite do estoque atingido' : 'Produto esgotado'}</div>`;
+    const num = state.config.whatsapp || WHATSAPP_DEFAULT;
+    const msg = encodeURIComponent(`Olá! Vi que o *${p.nome}* está esgotado no site. Gostaria de reservar ou saber quando chega. 😊`);
+    const waUrl = `https://wa.me/${num}?text=${msg}`;
+    btnAdd.outerHTML = `
+      <div id="btnAddCart" style="display:flex;flex-direction:column;gap:.5rem;width:100%;">
+        <div class="detalhe-esgotado">🔴 ${noCarrinho > 0 ? 'Limite do estoque atingido' : 'Produto esgotado'}</div>
+        <a href="${waUrl}" target="_blank" class="btn-reservar-whatsapp">
+          📱 Reservar via WhatsApp
+        </a>
+      </div>`;
   } else {
     const curr = document.getElementById('btnAddCart');
     if (curr.tagName !== 'BUTTON') {

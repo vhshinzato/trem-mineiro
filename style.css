@@ -1341,6 +1341,21 @@
       font-weight: 700;
       font-size: .9rem;
     }
+    .btn-reservar-whatsapp {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      background: #25D366;
+      color: #fff;
+      font-weight: 700;
+      font-size: .95rem;
+      border-radius: 30px;
+      padding: .75rem 1.5rem;
+      text-decoration: none;
+      transition: background var(--trans);
+    }
+    .btn-reservar-whatsapp:hover { background: #1dae54; }
 
     /* ============================================================
        BOTÃO FLUTUANTE DO CARRINHO
