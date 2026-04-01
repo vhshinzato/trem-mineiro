@@ -5,7 +5,7 @@ import { state,
   carregarDoSupabase, carregarDadosAdmin,
   persistir, salvarManualSupabase,
   garantirEntradaEstoque, statusEstoque, labelStatus, gerarId,
-  loginAdmin, logoutAdmin, getAuthSession, criarAuthUser, atualizarSenhaAuth, uploadImagemStorage
+  loginAdmin, logoutAdmin, getAuthSession, criarAuthUser, atualizarSenhaAuth, uploadImagemStorage, uploadVideoStorage
 } from './db.js';
 import { WHATSAPP_DEFAULT, CATEGORIAS_PADRAO,
          PRODUTOS_PADRAO, USUARIOS_PADRAO } from './config.js';
@@ -540,6 +540,7 @@ function abrirModalProduto(prodId) {
   document.getElementById('prodVisivel').checked = true;
   document.getElementById('prodPromoAtiva').checked = false;
   document.getElementById('prodPromoWrap').style.display = 'none';
+  _resetarCamposVideo();
   ['prodNomeErr','prodDescErr','prodPrecoErr','prodCategoriaErr'].forEach(id => {
     document.getElementById(id).textContent = '';
   });
@@ -565,7 +566,16 @@ function abrirModalProduto(prodId) {
     document.getElementById('prodDesc').value      = p.descricao;
     document.getElementById('prodPreco').value     = p.preco.replace('R$ ', '');
     document.getElementById('prodVisivel').checked = p.visivel !== false;
-    document.getElementById('prodVideo').value = p.video || '';
+    if (p.video) {
+      document.getElementById('prodVideo').value = p.video;
+      const vp = document.getElementById('videoPreview');
+      vp.src = p.video;
+      document.getElementById('videoPreviewWrap').style.display = '';
+      document.getElementById('videoFileName').textContent = '✔ Vídeo salvo';
+      // Mostra aba URL pois já é uma URL do Storage
+      document.getElementById('videoPanelUpload').style.display = 'none';
+      document.getElementById('videoPanelUrl').style.display = '';
+    }
     _imgPosition = p.imgPosition || '50% 50%';
     if (p.precoPromo) {
       document.getElementById('prodPromoAtiva').checked = true;
@@ -603,8 +613,8 @@ async function salvarProduto() {
   const desc      = document.getElementById('prodDesc').value.trim();
   const preco     = document.getElementById('prodPreco').value.trim();
   const editId    = document.getElementById('prodEditId').value;
-  const visivel   = document.getElementById('prodVisivel').checked;
-  const video     = document.getElementById('prodVideo').value.trim();
+  const visivel    = document.getElementById('prodVisivel').checked;
+  const videoUrlManual = document.getElementById('prodVideo').value.trim();
   const promoAtiva= document.getElementById('prodPromoAtiva').checked;
   const precoPromoRaw = promoAtiva ? document.getElementById('prodPrecoPromo').value.trim() : '';
 
@@ -623,38 +633,43 @@ async function salvarProduto() {
     ? 'R$ ' + (precoPromoRaw.includes(',') ? precoPromoRaw : parseFloat(precoPromoRaw).toFixed(2).replace('.',','))
     : null;
 
-  // Upload da imagem para o Storage se houver arquivo selecionado
+  const prodId = editId || gerarId();
+  const imgPos = _imgPosition || '50% 50%';
+
+  // Upload da imagem
   let img = obterImagemFinal();
   if (_imgAbaAtiva === 'upload' && _imagemBase64 && _imagemFile) {
     try {
       mostrarToast('Enviando imagem...', 'success');
-      const prodId = editId || gerarId();
       img = await uploadImagemStorage(_imagemBase64, 'produtos', prodId);
-      if (editId) {
-        const idx = state.produtos.findIndex(p => p.id === editId);
-        const imgPos = _imgPosition || '50% 50%';
-        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: video||null, imagem: img, imgPosition: imgPos };
-        mostrarToast('Produto atualizado!', 'success');
-      } else {
-        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: video||null, imagem: img, imgPosition: _imgPosition || '50% 50%' });
-        garantirEntradaEstoque();
-        mostrarToast('Produto criado!', 'success');
-      }
     } catch(err) {
       mostrarToast('Erro ao enviar imagem: ' + err.message, 'error');
       return;
     }
-  } else {
-    const imgPos = _imgPosition || '50% 50%';
-    if (editId) {
-      const idx = state.produtos.findIndex(p => p.id === editId);
-      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: video||null, imagem: img, imgPosition: imgPos };
-      mostrarToast('Produto atualizado!', 'success');
-    } else {
-      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: video||null, imagem: img, imgPosition: imgPos });
-      garantirEntradaEstoque();
-      mostrarToast('Produto criado!', 'success');
+  }
+
+  // Upload do vídeo
+  let videoFinal = videoUrlManual || null;
+  if (_videoFile) {
+    try {
+      mostrarToast('Enviando vídeo...', 'success');
+      videoFinal = await uploadVideoStorage(_videoFile, 'videos', prodId);
+    } catch(err) {
+      mostrarToast('Erro ao enviar vídeo: ' + err.message, 'error');
+      return;
     }
+  }
+
+  const dadosProduto = { categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: videoFinal, imagem: img, imgPosition: imgPos };
+
+  if (editId) {
+    const idx = state.produtos.findIndex(p => p.id === editId);
+    if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], ...dadosProduto };
+    mostrarToast('Produto atualizado!', 'success');
+  } else {
+    state.produtos.push({ id: prodId, ...dadosProduto });
+    garantirEntradaEstoque();
+    mostrarToast('Produto criado!', 'success');
   }
 
   persistir();
@@ -3930,6 +3945,60 @@ inicializar();
   document.addEventListener('mouseleave', parar, { passive: true });
 })();
 /* ============================================================
+   VÍDEO DO PRODUTO
+============================================================ */
+let _videoFile = null;
+
+function trocarAbaVideo(aba, btn) {
+  document.querySelectorAll('#videoPanelUpload, #videoPanelUrl').forEach(el => el.style.display = 'none');
+  document.getElementById(aba === 'upload' ? 'videoPanelUpload' : 'videoPanelUrl').style.display = '';
+  btn.closest('.img-source-tabs').querySelectorAll('.img-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function handleVideoUpload(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (file.size > 50 * 1024 * 1024) {
+    mostrarToast('Vídeo muito grande! Máximo 50 MB.', 'error');
+    input.value = '';
+    return;
+  }
+  _videoFile = file;
+  document.getElementById('videoFileName').textContent = '✔ ' + file.name;
+  const preview = document.getElementById('videoPreview');
+  preview.src = URL.createObjectURL(file);
+  document.getElementById('videoPreviewWrap').style.display = '';
+}
+
+function removerVideo() {
+  _videoFile = null;
+  document.getElementById('prodVideoFile').value = '';
+  document.getElementById('prodVideo').value = '';
+  document.getElementById('videoFileName').textContent = '';
+  document.getElementById('videoPreviewWrap').style.display = 'none';
+  document.getElementById('videoPreview').src = '';
+}
+
+function _resetarCamposVideo() {
+  _videoFile = null;
+  const fn = document.getElementById('videoFileName');
+  if (fn) fn.textContent = '';
+  const vf = document.getElementById('prodVideoFile');
+  if (vf) vf.value = '';
+  const vu = document.getElementById('prodVideo');
+  if (vu) vu.value = '';
+  const vw = document.getElementById('videoPreviewWrap');
+  if (vw) vw.style.display = 'none';
+  const vp = document.getElementById('videoPreview');
+  if (vp) vp.src = '';
+  // Reseta abas para upload
+  const tabs = document.querySelectorAll('#videoPanelUpload, #videoPanelUrl');
+  if (tabs[0]) tabs[0].style.display = '';
+  if (tabs[1]) tabs[1].style.display = 'none';
+}
+
+/* ============================================================
    DOWNLOAD DE MODELOS EXCEL
 ============================================================ */
 function baixarModeloExcel(tipo) {
@@ -4341,6 +4410,9 @@ if (typeof trocarAbaImagem !== "undefined") window.trocarAbaImagem = trocarAbaIm
 if (typeof trocarAuthTab !== "undefined") window.trocarAuthTab = trocarAuthTab;
 if (typeof voltarCardapio !== "undefined") window.voltarCardapio = voltarCardapio;
 if (typeof togglePromo !== "undefined") window.togglePromo = togglePromo;
+if (typeof trocarAbaVideo !== "undefined") window.trocarAbaVideo = trocarAbaVideo;
+if (typeof handleVideoUpload !== "undefined") window.handleVideoUpload = handleVideoUpload;
+if (typeof removerVideo !== "undefined") window.removerVideo = removerVideo;
 if (typeof trocarAbaImport !== "undefined") window.trocarAbaImport = trocarAbaImport;
 if (typeof handleImportFile !== "undefined") window.handleImportFile = handleImportFile;
 if (typeof confirmarImport !== "undefined") window.confirmarImport = confirmarImport;

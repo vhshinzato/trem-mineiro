@@ -67,6 +67,18 @@ export async function uploadImagemStorage(base64, pasta, nomeArquivo) {
   return data.publicUrl;
 }
 
+export async function uploadVideoStorage(file, pasta, nomeArquivo) {
+  const ext  = file.name.split('.').pop().toLowerCase() || 'mp4';
+  const path = pasta + '/' + nomeArquivo + '.' + ext;
+  const { error } = await sb.storage.from('imagens').upload(path, file, {
+    contentType: file.type || 'video/mp4',
+    upsert: true
+  });
+  if (error) throw error;
+  const { data } = sb.storage.from('imagens').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 /* ============================================================
    SUPABASE — camada de dados com lazy loading
 ============================================================ */

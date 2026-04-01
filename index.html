@@ -955,8 +955,27 @@
     </div>
     <div class="form-group">
       <label class="form-label">Vídeo do Produto <span style="font-weight:400;font-size:.78rem;color:var(--cinza);">(opcional — aparece ao passar o mouse no card)</span></label>
-      <input type="text" class="form-input" id="prodVideo" placeholder="URL do vídeo .mp4 — ex: https://exemplo.com/video.mp4" />
-      <p style="font-size:.75rem;color:var(--cinza);margin-top:.3rem;">A foto continua aparecendo normalmente. O vídeo toca ao passar o mouse (desktop) ou tocar (celular).</p>
+      <div class="img-source-tabs" style="margin-bottom:.6rem;">
+        <button type="button" class="img-tab active" onclick="trocarAbaVideo('upload', this)">📁 Arquivo</button>
+        <button type="button" class="img-tab" onclick="trocarAbaVideo('url', this)">🔗 URL</button>
+      </div>
+      <div id="videoPanelUpload">
+        <label class="upload-drop-area" for="prodVideoFile" style="padding:.7rem;">
+          <div class="upload-icon" style="font-size:1.4rem;">🎬</div>
+          <div class="upload-text" style="font-size:.82rem;">Clique ou arraste o vídeo aqui</div>
+          <div class="upload-hint">MP4, MOV, WEBM — máx. 50 MB</div>
+        </label>
+        <input type="file" id="prodVideoFile" accept="video/*" style="display:none;" onchange="handleVideoUpload(this)" />
+        <div id="videoFileName" style="font-size:.75rem;color:var(--sucesso);font-weight:700;min-height:1.1em;margin-top:.3rem;"></div>
+      </div>
+      <div id="videoPanelUrl" style="display:none;">
+        <input type="text" class="form-input" id="prodVideo" placeholder="URL do vídeo .mp4" />
+      </div>
+      <p style="font-size:.75rem;color:var(--cinza);margin-top:.4rem;">A foto continua aparecendo normalmente. O vídeo toca ao passar o mouse (desktop) ou tocar (celular).</p>
+      <div id="videoPreviewWrap" style="display:none;margin-top:.5rem;">
+        <video style="width:100%;max-height:120px;border-radius:var(--radius-sm);object-fit:cover;" controls muted id="videoPreview"></video>
+        <button type="button" onclick="removerVideo()" style="font-size:.75rem;color:var(--erro);background:none;border:none;cursor:pointer;margin-top:.2rem;">✕ Remover vídeo</button>
+      </div>
     </div>
     <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
       <button class="btn btn-secondary" onclick="fecharModal('modalProduto')">Cancelar</button>
