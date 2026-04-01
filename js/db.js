@@ -64,7 +64,7 @@ export async function uploadImagemStorage(base64, pasta, nomeArquivo) {
   });
   if (error) throw error;
   const { data } = sb.storage.from('imagens').getPublicUrl(path);
-  return data.publicUrl;
+  return data.publicUrl + '?t=' + Date.now();
 }
 
 export async function uploadVideoStorage(file, pasta, nomeArquivo) {
