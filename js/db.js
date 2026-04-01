@@ -108,7 +108,9 @@ export async function carregarDoSupabase() {
 
   state.produtos = (prods && prods.length)
     ? prods.map(p => ({ id: p.id, categoriaId: p.categoria_id, nome: p.nome,
-        descricao: p.descricao, preco: p.preco, imagem: p.imagem || '' }))
+        descricao: p.descricao, preco: p.preco, imagem: p.imagem || '',
+        visivel: p.visivel !== false,
+        precoPromo: p.preco_promo || null }))
     : PRODUTOS_PADRAO;
 
   state.usuarios = (usrRows && usrRows.length)
@@ -217,7 +219,9 @@ async function syncToSupabase() {
   if (state.produtos.length)
     ops.push(sb.from('produtos').upsert(state.produtos.map(function(p,i){ return {
       id:p.id, categoria_id:p.categoriaId||null, nome:p.nome,
-      descricao:p.descricao||'', preco:p.preco||'', imagem:p.imagem||'', ordem:i
+      descricao:p.descricao||'', preco:p.preco||'', imagem:p.imagem||'', ordem:i,
+      visivel: p.visivel !== false,
+      preco_promo: p.precoPromo || null
     }; })));
   var estRows = Object.keys(state.estoque).map(function(pid){ return {
     produto_id:pid, quantidade:state.estoque[pid].quantidade, minimo:state.estoque[pid].minimo, maximo:state.estoque[pid].maximo
