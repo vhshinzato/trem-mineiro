@@ -533,7 +533,7 @@ function abrirModalProduto(prodId) {
   _imgPosition = '50% 50%';
 
   // Limpa campos
-  ['prodNome','prodDesc','prodPreco','prodImagem','prodPrecoPromo','prodVideo'].forEach(id => {
+  ['prodNome','prodDesc','prodPreco','prodImagem','prodPrecoPromo'].forEach(id => {
     document.getElementById(id).value = '';
     document.getElementById(id).classList.remove('error');
   });
