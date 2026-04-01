@@ -260,6 +260,25 @@ async function syncToSupabase() {
       id:u.id, nome:u.nome, login:u.login, email:u.email||null, senha:u.senha, perfil:u.perfil
     }; })));
   await Promise.all(ops);
+
+  // Remove do Supabase os itens que foram excluídos do state
+  var delOps = [];
+  var inList = function(ids) { return '(' + ids.map(function(id){ return '"' + id + '"'; }).join(',') + ')'; };
+
+  if (state.produtos.length)
+    delOps.push(sb.from('produtos').delete().not('id', 'in', inList(state.produtos.map(function(p){ return p.id; }))));
+  if (state.categorias.length)
+    delOps.push(sb.from('categorias').delete().not('id', 'in', inList(state.categorias.map(function(c){ return c.id; }))));
+  if (state.fornecedores.length)
+    delOps.push(sb.from('fornecedores').delete().not('id', 'in', inList(state.fornecedores.map(function(f){ return f.id; }))));
+  if (state.clientes.length)
+    delOps.push(sb.from('clientes').delete().not('id', 'in', inList(state.clientes.map(function(c){ return c.id; }))));
+
+  var prodIdsEstoque = Object.keys(state.estoque);
+  if (prodIdsEstoque.length)
+    delOps.push(sb.from('estoque').delete().not('produto_id', 'in', inList(prodIdsEstoque)));
+
+  if (delOps.length) await Promise.all(delOps);
 }
 
 export async function salvarManualSupabase() {
