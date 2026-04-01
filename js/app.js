@@ -567,12 +567,11 @@ function abrirModalProduto(prodId) {
     document.getElementById('prodPreco').value     = p.preco.replace('R$ ', '');
     document.getElementById('prodVisivel').checked = p.visivel !== false;
     if (p.video) {
-      document.getElementById('prodVideo').value = p.video;
-      const vp = document.getElementById('videoPreview');
-      vp.src = p.video;
-      document.getElementById('videoPreviewWrap').style.display = '';
-      document.getElementById('videoFileName').textContent = '✔ Vídeo salvo';
-      // Mostra aba URL pois já é uma URL do Storage
+      // Extrai o ID do Drive da URL salva
+      const driveMatch = p.video.match(/[?&]id=([^&]+)/);
+      const driveId = driveMatch ? driveMatch[1] : '';
+      document.getElementById('prodVideoDriveId').value = driveId;
+      document.getElementById('videoFileName').textContent = driveId ? '✔ Vídeo vinculado' : '';
       document.getElementById('videoPanelUpload').style.display = 'none';
       document.getElementById('videoPanelUrl').style.display = '';
     }
@@ -614,7 +613,8 @@ async function salvarProduto() {
   const preco     = document.getElementById('prodPreco').value.trim();
   const editId    = document.getElementById('prodEditId').value;
   const visivel    = document.getElementById('prodVisivel').checked;
-  const videoUrlManual = document.getElementById('prodVideo').value.trim();
+  const driveId    = document.getElementById('prodVideoDriveId').value.trim();
+  const videoUrlManual = driveId ? `https://drive.google.com/uc?export=download&id=${driveId}` : '';
   const promoAtiva= document.getElementById('prodPromoAtiva').checked;
   const precoPromoRaw = promoAtiva ? document.getElementById('prodPrecoPromo').value.trim() : '';
 
@@ -3986,8 +3986,8 @@ function _resetarCamposVideo() {
   if (fn) fn.textContent = '';
   const vf = document.getElementById('prodVideoFile');
   if (vf) vf.value = '';
-  const vu = document.getElementById('prodVideo');
-  if (vu) vu.value = '';
+  const di = document.getElementById('prodVideoDriveId');
+  if (di) di.value = '';
   const vw = document.getElementById('videoPreviewWrap');
   if (vw) vw.style.display = 'none';
   const vp = document.getElementById('videoPreview');

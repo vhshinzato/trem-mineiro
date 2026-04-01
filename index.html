@@ -969,7 +969,11 @@
         <div id="videoFileName" style="font-size:.75rem;color:var(--sucesso);font-weight:700;min-height:1.1em;margin-top:.3rem;"></div>
       </div>
       <div id="videoPanelUrl" style="display:none;">
-        <input type="text" class="form-input" id="prodVideo" placeholder="URL do vídeo .mp4" />
+        <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--creme-dark);border-radius:var(--radius-sm);overflow:hidden;background:#fff;">
+          <span style="padding:.55rem .6rem;background:var(--creme);color:var(--cinza);font-size:.75rem;white-space:nowrap;border-right:1px solid var(--creme-dark);flex-shrink:0;">drive.google.com/uc?export=download&id=</span>
+          <input type="text" id="prodVideoDriveId" placeholder="Cole o ID aqui" style="border:none;outline:none;padding:.55rem .7rem;font-size:.85rem;width:100%;font-family:var(--font-sans);" />
+        </div>
+        <p style="font-size:.73rem;color:var(--cinza);margin-top:.3rem;">Cole só o ID do vídeo — a parte entre <strong>/d/</strong> e <strong>/view</strong> no link do Drive.</p>
       </div>
       <p style="font-size:.75rem;color:var(--cinza);margin-top:.4rem;">A foto continua aparecendo normalmente. O vídeo toca ao passar o mouse (desktop) ou tocar (celular).</p>
       <div id="videoPreviewWrap" style="display:none;margin-top:.5rem;">
