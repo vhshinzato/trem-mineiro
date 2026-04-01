@@ -111,7 +111,8 @@ export async function carregarDoSupabase() {
         descricao: p.descricao, preco: p.preco, imagem: p.imagem || '',
         visivel: p.visivel !== false,
         precoPromo: p.preco_promo || null,
-        imgPosition: p.img_position || '50% 50%' }))
+        imgPosition: p.img_position || '50% 50%',
+        video: p.video || null }))
     : PRODUTOS_PADRAO;
 
   state.usuarios = (usrRows && usrRows.length)
@@ -223,7 +224,8 @@ async function syncToSupabase() {
       descricao:p.descricao||'', preco:p.preco||'', imagem:p.imagem||'', ordem:i,
       visivel: p.visivel !== false,
       preco_promo: p.precoPromo || null,
-      img_position: p.imgPosition || '50% 50%'
+      img_position: p.imgPosition || '50% 50%',
+      video: p.video || null
     }; })));
   var estRows = Object.keys(state.estoque).map(function(pid){ return {
     produto_id:pid, quantidade:state.estoque[pid].quantidade, minimo:state.estoque[pid].minimo, maximo:state.estoque[pid].maximo

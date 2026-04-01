@@ -59,12 +59,16 @@ function renderCardapio(filtroNome = '', filtroCat = '') {
         const card = document.createElement('div');
         card.className = 'product-card';
         card.onclick = () => abrirDetalhe(p.id);
+        const videoHtml = p.video
+          ? `<video class="product-card-video" src="${escapeHtml(p.video)}" muted loop playsinline preload="none"></video>`
+          : '';
         card.innerHTML = `
           <div class="product-img-wrap" style="position:relative;">
             ${p.imagem
               ? `<img src="${escapeHtml(p.imagem)}" alt="${escapeHtml(p.nome)}" loading="lazy" style="object-position:${p.imgPosition||'50% 50%'};" onerror="this.parentElement.innerHTML='<div class=\\'product-img-placeholder\\'>🛍️</div>'" />`
               : `<div class="product-img-placeholder">🛍️</div>`
             }
+            ${videoHtml}
             <div class="product-card-overlay"><span>🛒 Ver detalhes</span></div>
           </div>
           <div class="product-body">
@@ -80,6 +84,21 @@ function renderCardapio(filtroNome = '', filtroCat = '') {
             }
           </div>
         `;
+        // Hover/toque para tocar vídeo
+        if (p.video) {
+          const vid = card.querySelector('.product-card-video');
+          const img = card.querySelector('img');
+          function playVideo() { if (img) img.style.opacity = '0'; vid.style.opacity = '1'; vid.play().catch(()=>{}); }
+          function stopVideo() { vid.pause(); vid.currentTime = 0; vid.style.opacity = '0'; if (img) img.style.opacity = '1'; }
+          card.addEventListener('mouseenter', playVideo);
+          card.addEventListener('mouseleave', stopVideo);
+          card.addEventListener('touchstart', function(e) {
+            if (vid.paused) { e.preventDefault(); playVideo(); }
+          }, { passive: false });
+          card.addEventListener('touchend', function() {
+            setTimeout(stopVideo, 2500);
+          });
+        }
         grid.appendChild(card);
       });
     }
@@ -514,7 +533,7 @@ function abrirModalProduto(prodId) {
   _imgPosition = '50% 50%';
 
   // Limpa campos
-  ['prodNome','prodDesc','prodPreco','prodImagem','prodPrecoPromo'].forEach(id => {
+  ['prodNome','prodDesc','prodPreco','prodImagem','prodPrecoPromo','prodVideo'].forEach(id => {
     document.getElementById(id).value = '';
     document.getElementById(id).classList.remove('error');
   });
@@ -546,6 +565,7 @@ function abrirModalProduto(prodId) {
     document.getElementById('prodDesc').value      = p.descricao;
     document.getElementById('prodPreco').value     = p.preco.replace('R$ ', '');
     document.getElementById('prodVisivel').checked = p.visivel !== false;
+    document.getElementById('prodVideo').value = p.video || '';
     _imgPosition = p.imgPosition || '50% 50%';
     if (p.precoPromo) {
       document.getElementById('prodPromoAtiva').checked = true;
@@ -584,6 +604,7 @@ async function salvarProduto() {
   const preco     = document.getElementById('prodPreco').value.trim();
   const editId    = document.getElementById('prodEditId').value;
   const visivel   = document.getElementById('prodVisivel').checked;
+  const video     = document.getElementById('prodVideo').value.trim();
   const promoAtiva= document.getElementById('prodPromoAtiva').checked;
   const precoPromoRaw = promoAtiva ? document.getElementById('prodPrecoPromo').value.trim() : '';
 
@@ -612,10 +633,10 @@ async function salvarProduto() {
       if (editId) {
         const idx = state.produtos.findIndex(p => p.id === editId);
         const imgPos = _imgPosition || '50% 50%';
-        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img, imgPosition: imgPos };
+        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: video||null, imagem: img, imgPosition: imgPos };
         mostrarToast('Produto atualizado!', 'success');
       } else {
-        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img, imgPosition: _imgPosition || '50% 50%' });
+        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: video||null, imagem: img, imgPosition: _imgPosition || '50% 50%' });
         garantirEntradaEstoque();
         mostrarToast('Produto criado!', 'success');
       }
@@ -627,10 +648,10 @@ async function salvarProduto() {
     const imgPos = _imgPosition || '50% 50%';
     if (editId) {
       const idx = state.produtos.findIndex(p => p.id === editId);
-      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img, imgPosition: imgPos };
+      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: video||null, imagem: img, imgPosition: imgPos };
       mostrarToast('Produto atualizado!', 'success');
     } else {
-      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img, imgPosition: imgPos });
+      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, video: video||null, imagem: img, imgPosition: imgPos });
       garantirEntradaEstoque();
       mostrarToast('Produto criado!', 'success');
     }
