@@ -31,6 +31,7 @@ function renderCardapio(filtroNome = '', filtroCat = '') {
 
     const prods = state.produtos.filter(p =>
       p.categoriaId === cat.id &&
+      p.visivel !== false &&
       (!termoBusca || norm(p.nome).includes(termoBusca) || norm(p.descricao).includes(termoBusca))
     );
 
@@ -455,9 +456,13 @@ function renderTabelaProdutos() {
           : `<div class="table-thumb-placeholder">🛍️</div>`
         }
       </td>
-      <td><strong>${escapeHtml(p.nome)}</strong></td>
+      <td>
+        <strong>${escapeHtml(p.nome)}</strong>
+        ${p.visivel === false ? '<span style="margin-left:.4rem;font-size:.7rem;background:#eee;color:#888;border-radius:20px;padding:.1rem .45rem;font-weight:700;">OCULTO</span>' : ''}
+        ${p.precoPromo ? '<span style="margin-left:.4rem;font-size:.7rem;background:var(--terra);color:#fff;border-radius:20px;padding:.1rem .45rem;font-weight:700;">PROMOÇÃO</span>' : ''}
+      </td>
       <td>${cat ? escapeHtml(cat.nome) : '<em>—</em>'}</td>
-      <td>${escapeHtml(p.preco)}</td>
+      <td>${p.precoPromo ? `<span style="text-decoration:line-through;color:var(--cinza);font-size:.85rem;">${escapeHtml(p.preco)}</span> ${escapeHtml(p.precoPromo)}` : escapeHtml(p.preco)}</td>
       <td>
         <div class="actions-cell">
           <button class="btn btn-outline btn-sm" onclick="abrirModalProduto('${p.id}')">✏️ Editar</button>
@@ -512,6 +517,7 @@ function abrirModalProduto(prodId) {
     document.getElementById(id).value = '';
     document.getElementById(id).classList.remove('error');
   });
+  document.getElementById('prodVisivel').checked = true;
   document.getElementById('prodPromoAtiva').checked = false;
   document.getElementById('prodPromoWrap').style.display = 'none';
   ['prodNomeErr','prodDescErr','prodPrecoErr','prodCategoriaErr'].forEach(id => {
@@ -538,6 +544,7 @@ function abrirModalProduto(prodId) {
     document.getElementById('prodNome').value      = p.nome;
     document.getElementById('prodDesc').value      = p.descricao;
     document.getElementById('prodPreco').value     = p.preco.replace('R$ ', '');
+    document.getElementById('prodVisivel').checked = p.visivel !== false;
     if (p.precoPromo) {
       document.getElementById('prodPromoAtiva').checked = true;
       document.getElementById('prodPromoWrap').style.display = '';
@@ -578,6 +585,7 @@ async function salvarProduto() {
   const desc      = document.getElementById('prodDesc').value.trim();
   const preco     = document.getElementById('prodPreco').value.trim();
   const editId    = document.getElementById('prodEditId').value;
+  const visivel   = document.getElementById('prodVisivel').checked;
   const promoAtiva= document.getElementById('prodPromoAtiva').checked;
   const precoPromoRaw = promoAtiva ? document.getElementById('prodPrecoPromo').value.trim() : '';
 
@@ -605,10 +613,10 @@ async function salvarProduto() {
       img = await uploadImagemStorage(_imagemBase64, 'produtos', prodId);
       if (editId) {
         const idx = state.produtos.findIndex(p => p.id === editId);
-        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, imagem: img };
+        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img };
         mostrarToast('Produto atualizado!', 'success');
       } else {
-        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, imagem: img });
+        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img });
         garantirEntradaEstoque();
         mostrarToast('Produto criado!', 'success');
       }
@@ -619,10 +627,10 @@ async function salvarProduto() {
   } else {
     if (editId) {
       const idx = state.produtos.findIndex(p => p.id === editId);
-      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, imagem: img };
+      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img };
       mostrarToast('Produto atualizado!', 'success');
     } else {
-      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, imagem: img });
+      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img });
       garantirEntradaEstoque();
       mostrarToast('Produto criado!', 'success');
     }
