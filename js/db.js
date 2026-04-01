@@ -110,7 +110,8 @@ export async function carregarDoSupabase() {
     ? prods.map(p => ({ id: p.id, categoriaId: p.categoria_id, nome: p.nome,
         descricao: p.descricao, preco: p.preco, imagem: p.imagem || '',
         visivel: p.visivel !== false,
-        precoPromo: p.preco_promo || null }))
+        precoPromo: p.preco_promo || null,
+        imgPosition: p.img_position || '50% 50%' }))
     : PRODUTOS_PADRAO;
 
   state.usuarios = (usrRows && usrRows.length)
@@ -221,7 +222,8 @@ async function syncToSupabase() {
       id:p.id, categoria_id:p.categoriaId||null, nome:p.nome,
       descricao:p.descricao||'', preco:p.preco||'', imagem:p.imagem||'', ordem:i,
       visivel: p.visivel !== false,
-      preco_promo: p.precoPromo || null
+      preco_promo: p.precoPromo || null,
+      img_position: p.imgPosition || '50% 50%'
     }; })));
   var estRows = Object.keys(state.estoque).map(function(pid){ return {
     produto_id:pid, quantidade:state.estoque[pid].quantidade, minimo:state.estoque[pid].minimo, maximo:state.estoque[pid].maximo

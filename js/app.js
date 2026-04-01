@@ -62,7 +62,7 @@ function renderCardapio(filtroNome = '', filtroCat = '') {
         card.innerHTML = `
           <div class="product-img-wrap" style="position:relative;">
             ${p.imagem
-              ? `<img src="${escapeHtml(p.imagem)}" alt="${escapeHtml(p.nome)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'product-img-placeholder\\'>🛍️</div>'" />`
+              ? `<img src="${escapeHtml(p.imagem)}" alt="${escapeHtml(p.nome)}" loading="lazy" style="object-position:${p.imgPosition||'50% 50%'};" onerror="this.parentElement.innerHTML='<div class=\\'product-img-placeholder\\'>🛍️</div>'" />`
               : `<div class="product-img-placeholder">🛍️</div>`
             }
             <div class="product-card-overlay"><span>🛒 Ver detalhes</span></div>
@@ -511,6 +511,7 @@ function abrirModalProduto(prodId) {
   // Reseta estado de imagem
   _imagemBase64 = null;
   _imgAbaAtiva = 'url';
+  _imgPosition = '50% 50%';
 
   // Limpa campos
   ['prodNome','prodDesc','prodPreco','prodImagem','prodPrecoPromo'].forEach(id => {
@@ -545,6 +546,7 @@ function abrirModalProduto(prodId) {
     document.getElementById('prodDesc').value      = p.descricao;
     document.getElementById('prodPreco').value     = p.preco.replace('R$ ', '');
     document.getElementById('prodVisivel').checked = p.visivel !== false;
+    _imgPosition = p.imgPosition || '50% 50%';
     if (p.precoPromo) {
       document.getElementById('prodPromoAtiva').checked = true;
       document.getElementById('prodPromoWrap').style.display = '';
@@ -564,11 +566,7 @@ function abrirModalProduto(prodId) {
         document.getElementById('prodImagem').value = p.imagem;
         _imgAbaAtiva = 'url';
       }
-      document.getElementById('imgPreviewWrap').innerHTML = `
-        <img src="${p.imagem.startsWith('data:') ? p.imagem : escapeHtml(p.imagem)}"
-             onerror="this.parentElement.innerHTML='<span>Imagem inválida</span>'" />
-        <button class="preview-remove" title="Remover imagem" onclick="removerImagem()">✕</button>
-      `;
+      _renderPreview(p.imagem.startsWith('data:') ? p.imagem : escapeHtml(p.imagem), _imgPosition);
     }
   } else {
     document.getElementById('modalProdTitulo').textContent = 'Novo Produto';
@@ -613,10 +611,11 @@ async function salvarProduto() {
       img = await uploadImagemStorage(_imagemBase64, 'produtos', prodId);
       if (editId) {
         const idx = state.produtos.findIndex(p => p.id === editId);
-        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img };
+        const imgPos = _imgPosition || '50% 50%';
+        if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img, imgPosition: imgPos };
         mostrarToast('Produto atualizado!', 'success');
       } else {
-        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img });
+        state.produtos.push({ id: prodId, categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img, imgPosition: _imgPosition || '50% 50%' });
         garantirEntradaEstoque();
         mostrarToast('Produto criado!', 'success');
       }
@@ -625,12 +624,13 @@ async function salvarProduto() {
       return;
     }
   } else {
+    const imgPos = _imgPosition || '50% 50%';
     if (editId) {
       const idx = state.produtos.findIndex(p => p.id === editId);
-      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img };
+      if (idx > -1) state.produtos[idx] = { ...state.produtos[idx], categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img, imgPosition: imgPos };
       mostrarToast('Produto atualizado!', 'success');
     } else {
-      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img });
+      state.produtos.push({ id: gerarId(), categoriaId: catId, nome, descricao: desc, preco: precoFormatado, precoPromo: precoPromoFormatado, visivel, imagem: img, imgPosition: imgPos });
       garantirEntradaEstoque();
       mostrarToast('Produto criado!', 'success');
     }
@@ -696,6 +696,8 @@ let _imagemBase64 = null;
 let _imagemFile   = null; // arquivo original para upload no Storage
 // Indica qual aba está ativa: 'url' ou 'upload'
 let _imgAbaAtiva = 'url';
+// Posição do ponto focal da imagem (ex: '50% 30%')
+let _imgPosition = '50% 50%';
 
 // Troca entre as abas URL e Upload
 function trocarAbaImagem(aba, btn) {
@@ -713,15 +715,68 @@ function trocarAbaImagem(aba, btn) {
   document.getElementById('imgPreviewWrap').innerHTML = '<span>Sem imagem</span>';
 }
 
+// Ativa drag-to-position no preview
+function _ativarDragPosition(img) {
+  let ativo = false, startX, startY, startPosX, startPosY;
+
+  function getPosicao() {
+    const pos = (img.style.objectPosition || '50% 50%').split(' ');
+    return { x: parseFloat(pos[0]) || 50, y: parseFloat(pos[1]) || 50 };
+  }
+
+  img.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    ativo = true;
+    startX = e.clientX; startY = e.clientY;
+    const p = getPosicao();
+    startPosX = p.x; startPosY = p.y;
+    img.classList.add('dragging');
+  });
+  img.addEventListener('touchstart', function(e) {
+    ativo = true;
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    const p = getPosicao();
+    startPosX = p.x; startPosY = p.y;
+    img.classList.add('dragging');
+  }, { passive: true });
+
+  function mover(clientX, clientY) {
+    if (!ativo) return;
+    const dx = (startX - clientX) / img.offsetWidth  * 100;
+    const dy = (startY - clientY) / img.offsetHeight * 100;
+    const nx = Math.min(100, Math.max(0, startPosX + dx));
+    const ny = Math.min(100, Math.max(0, startPosY + dy));
+    _imgPosition = `${nx.toFixed(1)}% ${ny.toFixed(1)}%`;
+    img.style.objectPosition = _imgPosition;
+  }
+  document.addEventListener('mousemove', function(e) { mover(e.clientX, e.clientY); });
+  document.addEventListener('touchmove', function(e) { mover(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+
+  function parar() { ativo = false; img.classList.remove('dragging'); }
+  document.addEventListener('mouseup', parar);
+  document.addEventListener('touchend', parar);
+}
+
+function _renderPreview(src, posicao) {
+  _imgPosition = posicao || '50% 50%';
+  const wrap = document.getElementById('imgPreviewWrap');
+  wrap.innerHTML = `
+    <img src="${src}" alt="preview" style="object-position:${_imgPosition};" />
+    <div class="img-preview-hint">✥ Arraste para reposicionar</div>
+    <button class="preview-remove" title="Remover imagem" onclick="removerImagem()">✕</button>
+  `;
+  _ativarDragPosition(wrap.querySelector('img'));
+}
+
 // Preview de imagem ao digitar URL
 function previewImagem() {
   const url = document.getElementById('prodImagem').value.trim();
   const wrap = document.getElementById('imgPreviewWrap');
   if (!url) { wrap.innerHTML = '<span>Sem imagem</span>'; return; }
-  wrap.innerHTML = `
-    <img src="${escapeHtml(url)}" onerror="this.parentElement.innerHTML='<span>Imagem inválida ou inacessível</span>'" />
-    <button class="preview-remove" title="Remover imagem" onclick="removerImagem()">✕</button>
-  `;
+  _renderPreview(escapeHtml(url), _imgPosition);
+  wrap.querySelector('img').onerror = function() {
+    wrap.innerHTML = '<span>Imagem inválida ou inacessível</span>';
+  };
 }
 
 // Lida com o upload de arquivo
@@ -729,7 +784,6 @@ function handleFileUpload(input) {
   const file = input.files && input.files[0];
   if (!file) return;
 
-  // Validação de tamanho: máx 5 MB
   if (file.size > 10 * 1024 * 1024) {
     mostrarToast('Imagem muito grande! Máximo 10 MB.', 'error');
     input.value = '';
@@ -740,11 +794,7 @@ function handleFileUpload(input) {
     _imagemBase64 = base64;
     _imagemFile   = file;
     document.getElementById('uploadFileName').textContent = '✔ ' + file.name;
-    const wrap = document.getElementById('imgPreviewWrap');
-    wrap.innerHTML = `
-      <img src="${_imagemBase64}" alt="preview" />
-      <button class="preview-remove" title="Remover imagem" onclick="removerImagem()">✕</button>
-    `;
+    _renderPreview(base64, '50% 50%');
   });
 }
 
@@ -1509,6 +1559,7 @@ function abrirDetalhe(prodId) {
   const imgWrap = document.getElementById('detalheImgWrap');
   if (p.imagem) {
     imgWrap.innerHTML = `<img class="detalhe-img" src="${p.imagem.startsWith('data:') ? p.imagem : escapeHtml(p.imagem)}"
+      style="object-position:${p.imgPosition||'50% 50%'};"
       onerror="this.outerHTML='<div class=\'detalhe-img-placeholder\'>🛍️</div>'" />`;
   } else {
     imgWrap.innerHTML = `<div class="detalhe-img-placeholder">🛍️</div>`;
