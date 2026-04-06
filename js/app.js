@@ -1390,6 +1390,7 @@ function ajusteRapido(prodId, delta) {
   renderTabelaEstoque();
   renderResumoEstoque();
   renderHistorico();
+  renderCardapio();
   mostrarToast(`Estoque atualizado para ${novo} un. ✓`, 'success');
 }
 
@@ -1409,6 +1410,7 @@ function ajusteDigitado(prodId, input) {
   renderTabelaEstoque();
   renderResumoEstoque();
   renderHistorico();
+  renderCardapio();
   mostrarToast(`Estoque atualizado para ${novo} un. ✓`, 'success');
 }
 
@@ -1483,6 +1485,7 @@ function confirmarMovimento() {
   renderTabelaEstoque();
   renderResumoEstoque();
   renderHistorico();
+  renderCardapio();
   mostrarToast('Estoque atualizado! ✓', 'success');
 }
 
