@@ -1270,6 +1270,19 @@
       padding: 0;
       overflow: hidden;
     }
+    .detalhe-modal-close {
+      position: absolute;
+      top: .7rem;
+      right: .7rem;
+      z-index: 20;
+      background: rgba(44,24,16,.65);
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .detalhe-modal-close:hover { background: var(--cafe); }
     .detalhe-layout {
       display: flex;
       flex-wrap: wrap;
