@@ -1,6 +1,6 @@
 /* js/app.js — Lógica da aplicação
    UI pública, painel admin, carrinho, relatórios e inicialização. */
-import { state,
+import { state, sb,
   carregarDados, salvarDados,
   carregarDoSupabase, carregarDadosAdmin,
   persistir, salvarManualSupabase,
@@ -241,6 +241,16 @@ async function fazerLogin() {
   const login = document.getElementById('loginUser').value.trim();
   const senha = document.getElementById('loginPass').value;
   const alerta = document.getElementById('loginAlert');
+
+  // Carrega usuarios do Supabase se ainda não carregados (removidos da fase pública por segurança)
+  if (!state.usuarios.length || state.usuarios === USUARIOS_PADRAO) {
+    try {
+      const { data: usrRows } = await sb.from('usuarios').select('*');
+      if (usrRows && usrRows.length) {
+        state.usuarios = usrRows.map(u => ({ id: u.id, nome: u.nome, login: u.login, email: u.email||'', perfil: u.perfil }));
+      }
+    } catch(e) { /* mantém USUARIOS_PADRAO se falhar */ }
+  }
 
   const usuario = state.usuarios.find(u => u.login === login);
   if (!usuario) {
@@ -3917,6 +3927,13 @@ async function inicializar() {
     const { data: { session } } = await getAuthSession();
     if (session) {
       const emailSessao = session.user.email;
+      // Carrega usuarios se necessário para restaurar a sessão
+      if (!state.usuarios.length || state.usuarios === USUARIOS_PADRAO) {
+        const { data: usrRows } = await sb.from('usuarios').select('*');
+        if (usrRows && usrRows.length) {
+          state.usuarios = usrRows.map(u => ({ id: u.id, nome: u.nome, login: u.login, email: u.email||'', perfil: u.perfil }));
+        }
+      }
       const usuario = state.usuarios.find(u =>
         u.email === emailSessao || `${u.login}@trem-mineiro.app` === emailSessao
       );
