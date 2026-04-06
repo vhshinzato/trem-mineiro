@@ -73,7 +73,9 @@ function renderCardapio(filtroNome = '', filtroCat = '') {
           </div>
           <div class="product-body">
             <div class="product-name">${escapeHtml(p.nome)}</div>
-            <div class="product-desc">${escapeHtml(p.descricao)}</div>
+            <div class="product-desc">${p.descricao && p.descricao.length > 80
+              ? escapeHtml(p.descricao.slice(0, 80)) + '... <span class="product-desc-mais">Ler mais</span>'
+              : escapeHtml(p.descricao)}</div>
             ${p.precoPromo
               ? `<div class="product-price-wrap">
                    <span class="product-price-promo-badge">PROMOÇÃO</span>

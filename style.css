@@ -423,6 +423,11 @@
       flex: 1;
       margin-bottom: .8rem;
     }
+    .product-desc-mais {
+      color: var(--terra);
+      font-weight: 600;
+      white-space: nowrap;
+    }
     .product-price {
       font-family: var(--font-serif);
       font-size: 1.15rem;
