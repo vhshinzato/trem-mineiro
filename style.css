@@ -1273,7 +1273,7 @@
     .detalhe-modal-close {
       position: absolute;
       top: .7rem;
-      right: .7rem;
+      left: .7rem;
       z-index: 20;
       background: rgba(44,24,16,.65);
       color: #fff;
