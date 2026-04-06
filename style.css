@@ -1356,14 +1356,16 @@
       font-size: .92rem;
       color: var(--cafe-soft);
       line-height: 1.65;
-      margin-bottom: 1.2rem;
+      margin-top: 1.4rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--creme-mid);
     }
     .detalhe-preco {
       font-family: var(--font-serif);
       font-size: 1.7rem;
       font-weight: 800;
       color: var(--terra);
-      margin-bottom: 1.8rem;
+      margin-bottom: 1.2rem;
     }
     .detalhe-footer {
       display: flex;
