@@ -30,6 +30,15 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+    html.modal-open,
+    html.modal-open body {
+      overflow: hidden;
+      height: 100%;
+    }
+    html.modal-open body {
+      position: fixed;
+      width: 100%;
+    }
     body {
       font-family: var(--font-sans);
       background: var(--creme);
@@ -519,6 +528,7 @@
       justify-content: center;
       padding: 1.5rem 1rem;
       overflow-y: auto;
+      overscroll-behavior: contain;
     }
     .modal-overlay.open { display: flex; }
     .modal-box {
@@ -1006,7 +1016,7 @@
       #btnClienteArea { padding: .3rem .6rem; font-size: .72rem; }
 
       /* Hero: logo menor, título em uma linha */
-      .logo-icon { height: 140px; max-width: 140px; padding: 1.2rem; }
+      .logo-icon { height: 140px; max-width: 140px; padding: 0; }
       .hero-logo-wrap { margin-bottom: 1.2rem; }
       #hero h1 { font-size: 1.2rem; white-space: normal; }
       #hero p { font-size: .88rem; }
@@ -1081,7 +1091,7 @@
     /* ── Modal detalhe: empilha no celular ─────────────────── */
     @media (max-width: 620px) {
       .detalhe-modal-box { margin: .4rem; border-radius: var(--radius); max-width: calc(100% - .8rem); max-height: calc(100vh - 1rem); display: flex; flex-direction: column; }
-      .detalhe-layout { flex-direction: column; overflow-y: auto; flex: 1; max-height: unset; }
+      .detalhe-layout { flex-direction: column; overflow-y: auto; overscroll-behavior: contain; flex: 1; max-height: unset; }
       .detalhe-img-col { flex: 0 0 220px; min-height: 220px; max-height: 220px; }
       .detalhe-img { object-fit: cover; }
       .detalhe-body { flex: 0 0 auto; max-height: unset; overflow-y: unset; padding: 1.2rem 1.1rem 1.4rem; }
@@ -1512,6 +1522,7 @@
     .carrinho-itens {
       flex: 1;
       overflow-y: auto;
+      overscroll-behavior: contain;
       padding: 1rem 1.4rem;
     }
     .carrinho-vazio {

@@ -1111,19 +1111,62 @@ function carregarPreviewLogoAdmin() {
 }
 
 
+var _modalScrollY = 0;
+function _lockBodyScroll() {
+  _modalScrollY = window.scrollY;
+  document.documentElement.classList.add('modal-open');
+  document.body.style.top = '-' + _modalScrollY + 'px';
+}
+function _unlockBodyScroll() {
+  document.documentElement.classList.remove('modal-open');
+  document.body.style.top = '';
+  window.scrollTo(0, _modalScrollY);
+}
+
 function abrirModal(id) {
   var el = document.getElementById(id);
   if (el) el.classList.add('open');
+  _lockBodyScroll();
 }
 function fecharModal(id) {
   var el = document.getElementById(id);
   if (el) el.classList.remove('open');
+  if (!document.querySelector('.modal-overlay.open')) {
+    _unlockBodyScroll();
+  }
 }
-// Fecha ao clicar fora
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => {
+// Fecha ao clicar fora + impede scroll do fundo no touch
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  var _touchStartY = 0;
+
+  overlay.addEventListener('click', function(e) {
     if (e.target === overlay) fecharModal(overlay.id);
   });
+
+  overlay.addEventListener('touchstart', function(e) {
+    _touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  overlay.addEventListener('touchmove', function(e) {
+    var deltaY = e.touches[0].clientY - _touchStartY;
+    var scrollingUp = deltaY > 0; // dedo desce = conteúdo sobe = "scroll up"
+
+    var el = e.target;
+    while (el && el !== overlay) {
+      var style = window.getComputedStyle(el);
+      var overflowY = style.overflowY;
+      if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
+        var atTop    = el.scrollTop <= 0;
+        var atBottom = el.scrollTop >= el.scrollHeight - el.clientHeight - 1;
+        // se chegou no limite na direção do gesto, bloqueia
+        if (scrollingUp && atTop)    break;
+        if (!scrollingUp && atBottom) break;
+        return; // ainda tem espaço pra rolar, libera
+      }
+      el = el.parentElement;
+    }
+    e.preventDefault();
+  }, { passive: false });
 });
 
 /* ============================================================
@@ -1736,11 +1779,15 @@ function abrirCarrinho() {
   renderCarrinho();
   document.getElementById('carrinhoOverlay').classList.add('open');
   document.getElementById('carrinhoDrawer').classList.add('open');
+  _lockBodyScroll();
 }
 
 function fecharCarrinho() {
   document.getElementById('carrinhoOverlay').classList.remove('open');
   document.getElementById('carrinhoDrawer').classList.remove('open');
+  if (!document.querySelector('.modal-overlay.open')) {
+    _unlockBodyScroll();
+  }
 }
 
 // ── Renderiza o drawer ───────────────────────────────────────
