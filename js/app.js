@@ -805,10 +805,27 @@ function _renderPreview(src, posicao) {
 }
 
 // Preview de imagem ao digitar URL
+// Converte link do Google Drive para URL direta de imagem
+function normalizarUrlImagem(url) {
+  if (!url) return url;
+  // Formatos possíveis do Drive:
+  // https://drive.google.com/file/d/ID/view
+  // https://drive.google.com/open?id=ID
+  // https://drive.google.com/uc?id=ID ou uc?export=...&id=ID
+  const matchFile = url.match(/drive\.google\.com\/file\/d\/([^/?&]+)/);
+  const matchId   = url.match(/[?&]id=([^&]+)/);
+  const id = matchFile ? matchFile[1] : (matchId ? matchId[1] : null);
+  if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+  return url;
+}
+
 function previewImagem() {
-  const url = document.getElementById('prodImagem').value.trim();
+  const raw  = document.getElementById('prodImagem').value.trim();
+  const url  = normalizarUrlImagem(raw);
   const wrap = document.getElementById('imgPreviewWrap');
   if (!url) { wrap.innerHTML = '<span>Sem imagem</span>'; return; }
+  // Atualiza o campo com a URL já normalizada
+  if (url !== raw) document.getElementById('prodImagem').value = url;
   _renderPreview(escapeHtml(url), _imgPosition);
   wrap.querySelector('img').onerror = function() {
     wrap.innerHTML = '<span>Imagem inválida ou inacessível</span>';
