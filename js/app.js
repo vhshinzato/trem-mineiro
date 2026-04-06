@@ -1613,7 +1613,7 @@ function abrirDetalhe(prodId) {
   if (p.imagem) {
     imgWrap.innerHTML = `<img class="detalhe-img" src="${p.imagem.startsWith('data:') ? p.imagem : escapeHtml(p.imagem)}"
       style="object-position:${p.imgPosition||'50% 50%'};"
-      onerror="this.outerHTML='<div class=\'detalhe-img-placeholder\'>🛍️</div>'" />`;
+      onerror="this.parentElement.innerHTML='<div class=\'detalhe-img-placeholder\'>🛍️</div>'" />`;
   } else {
     imgWrap.innerHTML = `<div class="detalhe-img-placeholder">🛍️</div>`;
   }

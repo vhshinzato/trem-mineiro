@@ -148,23 +148,27 @@
      MODAL: DETALHE DO PRODUTO (área pública)
 ============================================================ -->
 <div class="modal-overlay" id="modalDetalhe">
-  <div class="modal-box" style="padding:0;max-width:600px;">
-    <button class="modal-close" style="z-index:10;background:rgba(44,24,16,.55);color:#fff;position:absolute;top:.8rem;right:.8rem;" onclick="fecharModal('modalDetalhe')">✕</button>
-    <div id="detalheImgWrap"></div>
-    <div class="detalhe-body">
-      <div class="detalhe-cat-tag" id="detalheCat"></div>
-      <div class="detalhe-nome" id="detalheNome"></div>
-      <div class="detalhe-desc" id="detalheDesc"></div>
-      <div class="detalhe-preco" id="detalhePreco"></div>
-      <div class="detalhe-footer">
-        <div class="detalhe-qtd-wrap" id="detalheQtdWrap">
-          <button class="detalhe-qtd-btn" onclick="detalheQtd(-1)">−</button>
-          <span class="detalhe-qtd-num" id="detalheQtdNum">1</span>
-          <button class="detalhe-qtd-btn" onclick="detalheQtd(1)">+</button>
+  <div class="modal-box detalhe-modal-box">
+    <button class="modal-close" onclick="fecharModal('modalDetalhe')">✕</button>
+    <div class="detalhe-layout">
+      <!-- Coluna esquerda: imagem -->
+      <div class="detalhe-img-col" id="detalheImgWrap"></div>
+      <!-- Coluna direita: dados -->
+      <div class="detalhe-body">
+        <div class="detalhe-cat-tag" id="detalheCat"></div>
+        <div class="detalhe-nome" id="detalheNome"></div>
+        <div class="detalhe-desc" id="detalheDesc"></div>
+        <div class="detalhe-preco" id="detalhePreco"></div>
+        <div class="detalhe-footer">
+          <div class="detalhe-qtd-wrap" id="detalheQtdWrap">
+            <button class="detalhe-qtd-btn" onclick="detalheQtd(-1)">−</button>
+            <span class="detalhe-qtd-num" id="detalheQtdNum">1</span>
+            <button class="detalhe-qtd-btn" onclick="detalheQtd(1)">+</button>
+          </div>
+          <button class="btn-add-cart" id="btnAddCart" onclick="addAoCarrinho()">
+            🛒 Adicionar ao carrinho
+          </button>
         </div>
-        <button class="btn-add-cart" id="btnAddCart" onclick="addAoCarrinho()">
-          🛒 Adicionar ao carrinho
-        </button>
       </div>
     </div>
   </div>
