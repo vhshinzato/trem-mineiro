@@ -1079,12 +1079,12 @@
     }
 
     /* ── Modal detalhe: empilha no celular ─────────────────── */
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       .detalhe-modal-box { max-width: 100%; margin: .5rem; border-radius: var(--radius); }
-      .detalhe-layout { grid-template-columns: 1fr; min-height: unset; }
-      .detalhe-img-col { height: 220px; }
+      .detalhe-layout { grid-template-columns: 1fr; min-height: unset; max-height: calc(100vh - 2rem); overflow-y: auto; }
+      .detalhe-img-col { height: 240px; flex-shrink: 0; }
       .detalhe-img { object-fit: cover; }
-      .detalhe-body { padding: 1.2rem 1.1rem 1.4rem; max-height: 60vh; }
+      .detalhe-body { padding: 1.2rem 1.1rem 1.4rem; max-height: unset; overflow-y: unset; }
     }
 
     /* ── Touch: área de toque mínima nos botões ───────────── */
