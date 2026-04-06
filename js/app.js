@@ -13,6 +13,12 @@ import { WHATSAPP_DEFAULT, CATEGORIAS_PADRAO,
 /* ============================================================
    RENDERIZAÇÃO DA ÁREA PÚBLICA
 ============================================================ */
+var _renderCardapioTimer = null;
+function renderCardapioDebounced() {
+  clearTimeout(_renderCardapioTimer);
+  _renderCardapioTimer = setTimeout(function() { renderCardapio(); }, 300);
+}
+
 function renderCardapio(filtroNome = '', filtroCat = '') {
   const secoes = document.getElementById('productSections');
   secoes.innerHTML = '';
@@ -1374,7 +1380,7 @@ function ajusteRapido(prodId, delta) {
   renderTabelaEstoque();
   renderResumoEstoque();
   renderHistorico();
-  renderCardapio();
+  renderCardapioDebounced();
   mostrarToast(`Estoque atualizado para ${novo} un. ✓`, 'success');
 }
 
@@ -1394,7 +1400,7 @@ function ajusteDigitado(prodId, input) {
   renderTabelaEstoque();
   renderResumoEstoque();
   renderHistorico();
-  renderCardapio();
+  renderCardapioDebounced();
   mostrarToast(`Estoque atualizado para ${novo} un. ✓`, 'success');
 }
 
@@ -1469,7 +1475,7 @@ function confirmarMovimento() {
   renderTabelaEstoque();
   renderResumoEstoque();
   renderHistorico();
-  renderCardapio();
+  renderCardapioDebounced();
   mostrarToast('Estoque atualizado! ✓', 'success');
 }
 
@@ -2252,7 +2258,7 @@ function salvarFornecedor() {
 
   if (editId) {
     const idx = state.fornecedores.findIndex(f => f.id === editId);
-    if (idx > -1) state.fornecedores[idx] = { ...fornecedores[idx], nome, telefone, email, endereco, produtos: produtosField, obs };
+    if (idx > -1) state.fornecedores[idx] = { ...state.fornecedores[idx], nome, telefone, email, endereco, produtos: produtosField, obs };
     mostrarToast('Fornecedor atualizado! ✓', 'success');
   } else {
     state.fornecedores.push({ id: gerarId(), nome, telefone, email, endereco, produtos: produtosField, obs });
@@ -3402,7 +3408,7 @@ function salvarCliente() {
 
   if (editId) {
     const idx = state.clientes.findIndex(c => c.id === editId);
-    if (idx > -1) state.clientes[idx] = { ...clientes[idx], nome, aniversario, telefone, email, endereco, obs };
+    if (idx > -1) state.clientes[idx] = { ...state.clientes[idx], nome, aniversario, telefone, email, endereco, obs };
     mostrarToast('Cliente atualizado! ✓', 'success');
   } else {
     state.clientes.push({ id: gerarId(), nome, aniversario, telefone, email, endereco, obs, compras: [] });

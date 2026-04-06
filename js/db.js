@@ -101,14 +101,12 @@ export async function carregarDoSupabase() {
     { data: cats },
     { data: prods },
     { data: cfgRow },
-    { data: usrRows },
     { data: estRows },
   ] = await Promise.race([
     Promise.all([
       sb.from('categorias').select('*').order('ordem'),
       sb.from('produtos').select('*').order('ordem'),
       sb.from('config').select('*').eq('id','main').maybeSingle(),
-      sb.from('usuarios').select('*'),
       sb.from('estoque').select('*'),
     ]),
     timeout
@@ -129,9 +127,8 @@ export async function carregarDoSupabase() {
         video: p.video || null }))
     : PRODUTOS_PADRAO;
 
-  state.usuarios = (usrRows && usrRows.length)
-    ? usrRows.map(u => ({ id: u.id, nome: u.nome, login: u.login, email: u.email||'', senha: u.senha, perfil: u.perfil }))
-    : USUARIOS_PADRAO;
+  // usuarios carregado apenas na fase admin (carregarDadosAdmin)
+  if (!state.usuarios || !state.usuarios.length) state.usuarios = USUARIOS_PADRAO;
 
   if (cfgRow && cfgRow.dados) {
     var d = cfgRow.dados;
@@ -151,23 +148,29 @@ export async function carregarDoSupabase() {
 export async function carregarDadosAdmin() {
   if (state._adminCarregado) return;
 
-  const [
-    { data: estRows },
-    { data: movRows },
-    { data: fornRows },
-    { data: cliRows },
-    { data: cpRows },
-    { data: pedRows },
-    { data: usrRows },
-  ] = await Promise.all([
-    sb.from('estoque').select('*'),
-    sb.from('movimentos').select('*').order('criado_em',{ascending:false}).limit(200),
-    sb.from('fornecedores').select('*'),
-    sb.from('clientes').select('*'),
-    sb.from('compras').select('*'),
-    sb.from('pedidos').select('*').order('data',{ascending:false}),
-    sb.from('usuarios').select('*'),
-  ]);
+  var results;
+  try {
+    results = await Promise.all([
+      sb.from('estoque').select('*'),
+      sb.from('movimentos').select('*').order('criado_em',{ascending:false}).limit(200),
+      sb.from('fornecedores').select('*'),
+      sb.from('clientes').select('*'),
+      sb.from('compras').select('*'),
+      sb.from('pedidos').select('*').order('data',{ascending:false}),
+      sb.from('usuarios').select('*'),
+    ]);
+  } catch(err) {
+    console.error('Erro ao carregar dados admin:', err);
+    throw new Error('Falha ao carregar dados do painel. Verifique sua conexão e tente novamente.');
+  }
+
+  var estRows = results[0].data;
+  var movRows = results[1].data;
+  var fornRows = results[2].data;
+  var cliRows = results[3].data;
+  var cpRows = results[4].data;
+  var pedRows = results[5].data;
+  var usrRows = results[6].data;
 
   // Recarrega estoque com dados frescos do admin
   state.estoque = {};
