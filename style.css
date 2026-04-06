@@ -1080,11 +1080,11 @@
 
     /* ── Modal detalhe: empilha no celular ─────────────────── */
     @media (max-width: 620px) {
-      .detalhe-modal-box { margin: .4rem; border-radius: var(--radius); max-width: calc(100% - .8rem); }
-      .detalhe-layout { max-height: calc(100vh - 2rem); overflow-y: auto; }
-      .detalhe-img-col { flex: 0 0 100%; min-height: 220px; max-height: 240px; }
+      .detalhe-modal-box { margin: .4rem; border-radius: var(--radius); max-width: calc(100% - .8rem); max-height: calc(100vh - 1rem); display: flex; flex-direction: column; }
+      .detalhe-layout { flex-direction: column; overflow-y: auto; flex: 1; max-height: unset; }
+      .detalhe-img-col { flex: 0 0 220px; min-height: 220px; max-height: 220px; }
       .detalhe-img { object-fit: cover; }
-      .detalhe-body { flex: 0 0 100%; max-height: unset; padding: 1.2rem 1.1rem 1.4rem; }
+      .detalhe-body { flex: 0 0 auto; max-height: unset; overflow-y: unset; padding: 1.2rem 1.1rem 1.4rem; }
     }
 
     /* ── Touch: área de toque mínima nos botões ───────────── */
