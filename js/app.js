@@ -1113,29 +1113,13 @@ function carregarPreviewLogoAdmin() {
 }
 
 
-var _modalScrollY = 0;
-function _lockBodyScroll() {
-  _modalScrollY = window.scrollY;
-  document.documentElement.classList.add('modal-open');
-  document.body.style.top = '-' + _modalScrollY + 'px';
-}
-function _unlockBodyScroll() {
-  document.documentElement.classList.remove('modal-open');
-  document.body.style.top = '';
-  window.scrollTo(0, _modalScrollY);
-}
-
 function abrirModal(id) {
   var el = document.getElementById(id);
   if (el) el.classList.add('open');
-  _lockBodyScroll();
 }
 function fecharModal(id) {
   var el = document.getElementById(id);
   if (el) el.classList.remove('open');
-  if (!document.querySelector('.modal-overlay.open')) {
-    _unlockBodyScroll();
-  }
 }
 // Fecha ao clicar fora + impede scroll do fundo no touch
 document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
@@ -1784,15 +1768,11 @@ function abrirCarrinho() {
   renderCarrinho();
   document.getElementById('carrinhoOverlay').classList.add('open');
   document.getElementById('carrinhoDrawer').classList.add('open');
-  _lockBodyScroll();
 }
 
 function fecharCarrinho() {
   document.getElementById('carrinhoOverlay').classList.remove('open');
   document.getElementById('carrinhoDrawer').classList.remove('open');
-  if (!document.querySelector('.modal-overlay.open')) {
-    _unlockBodyScroll();
-  }
 }
 
 // ── Renderiza o drawer ───────────────────────────────────────
