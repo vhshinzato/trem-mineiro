@@ -1079,12 +1079,12 @@
     }
 
     /* ── Modal detalhe: empilha no celular ─────────────────── */
-    @media (max-width: 768px) {
-      .detalhe-modal-box { max-width: 100%; margin: .5rem; border-radius: var(--radius); }
-      .detalhe-layout { grid-template-columns: 1fr; min-height: unset; max-height: calc(100vh - 2rem); overflow-y: auto; }
-      .detalhe-img-col { height: 240px; flex-shrink: 0; }
+    @media (max-width: 620px) {
+      .detalhe-modal-box { margin: .4rem; border-radius: var(--radius); max-width: calc(100% - .8rem); }
+      .detalhe-layout { max-height: calc(100vh - 2rem); overflow-y: auto; }
+      .detalhe-img-col { flex: 0 0 100%; min-height: 220px; max-height: 240px; }
       .detalhe-img { object-fit: cover; }
-      .detalhe-body { padding: 1.2rem 1.1rem 1.4rem; max-height: unset; overflow-y: unset; }
+      .detalhe-body { flex: 0 0 100%; max-height: unset; padding: 1.2rem 1.1rem 1.4rem; }
     }
 
     /* ── Touch: área de toque mínima nos botões ───────────── */
@@ -1271,15 +1271,17 @@
       overflow: hidden;
     }
     .detalhe-layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: 420px;
+      display: flex;
+      flex-wrap: wrap;
       max-height: calc(100vh - 3rem);
+      overflow: hidden;
     }
     .detalhe-img-col {
-      position: relative;
+      flex: 1 1 280px;
+      min-height: 300px;
       background: var(--creme-mid);
       overflow: hidden;
+      position: relative;
     }
     .detalhe-img {
       width: 100%;
@@ -1295,6 +1297,7 @@
       font-size: 4rem;
     }
     .detalhe-body {
+      flex: 1 1 280px;
       padding: 2rem 1.8rem 1.8rem;
       overflow-y: auto;
       max-height: calc(100vh - 3rem);
