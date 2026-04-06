@@ -212,7 +212,7 @@ export async function carregarDadosAdmin() {
   }; });
 
   state.usuarios = (usrRows && usrRows.length)
-    ? usrRows.map(function(u) { return { id: u.id, nome: u.nome, login: u.login, email: u.email||'', senha: u.senha, perfil: u.perfil }; })
+    ? usrRows.map(function(u) { return { id: u.id, nome: u.nome, login: u.login, email: u.email||'', perfil: u.perfil }; })
     : USUARIOS_PADRAO;
 
   state._adminCarregado = true;
@@ -288,7 +288,7 @@ async function syncToSupabase() {
     }; })));
   if (state.usuarios.length)
     ops.push(sb.from('usuarios').upsert(state.usuarios.map(function(u){ return {
-      id:u.id, nome:u.nome, login:u.login, email:u.email||null, senha:u.senha, perfil:u.perfil
+      id:u.id, nome:u.nome, login:u.login, email:u.email||null, perfil:u.perfil
     }; })));
   await Promise.all(ops);
 

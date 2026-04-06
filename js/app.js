@@ -11,6 +11,19 @@ import { WHATSAPP_DEFAULT, CATEGORIAS_PADRAO,
          PRODUTOS_PADRAO, USUARIOS_PADRAO } from './config.js';
 
 /* ============================================================
+   SEGURANÇA — HASH DE SENHA (Web Crypto API)
+============================================================ */
+async function hashSenha(senha) {
+  const data = new TextEncoder().encode(senha);
+  const buf  = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+// Detecta se já é um hash SHA-256 (64 hex chars) ou texto plano
+function isSenhaHash(s) {
+  return typeof s === 'string' && /^[0-9a-f]{64}$/.test(s);
+}
+
+/* ============================================================
    RENDERIZAÇÃO DA ÁREA PÚBLICA
 ============================================================ */
 var _renderCardapioTimer = null;
@@ -937,7 +950,7 @@ function abrirModalUsuario(userId) {
     document.getElementById('userEditId').value = u.id;
     document.getElementById('userNome').value   = u.nome;
     document.getElementById('userLogin').value  = u.login;
-    document.getElementById('userSenha').value  = u.senha;
+    document.getElementById('userSenha').value  = ''; // nunca pré-preenche senha
     document.getElementById('userPerfil').value = u.perfil;
   } else {
     document.getElementById('modalUserTitulo').textContent = 'Novo Usuário';
@@ -953,7 +966,9 @@ async function salvarUsuario() {
   const editId = document.getElementById('userEditId').value;
 
   let valido = true;
-  const campos = { userNomeErr: !nome, userLoginErr: !login, userSenhaErr: !senha };
+  // Senha obrigatória só na criação; na edição é opcional (só atualiza se preenchida)
+  const senhaObrigatoria = !editId;
+  const campos = { userNomeErr: !nome, userLoginErr: !login, userSenhaErr: senhaObrigatoria && !senha };
   Object.keys(campos).forEach(k => {
     const fId = k.replace('Err','');
     document.getElementById(k).textContent = campos[k] ? 'Campo obrigatório.' : '';
@@ -972,8 +987,9 @@ async function salvarUsuario() {
 
   if (editId) {
     const idx = state.usuarios.findIndex(u => u.id === editId);
-    if (idx > -1) state.usuarios[idx] = { ...state.usuarios[idx], nome, login, senha, perfil };
-    if (state.sessao && editId === state.sessao.id) {
+    if (idx > -1) state.usuarios[idx] = { ...state.usuarios[idx], nome, login, perfil };
+    // Só atualiza senha no Supabase Auth se uma nova senha foi informada
+    if (senha && state.sessao && editId === state.sessao.id) {
       const { error: authErr } = await atualizarSenhaAuth(senha);
       if (authErr) {
         mostrarToast('Dados salvos, mas falha ao atualizar senha: ' + authErr.message, 'error');
@@ -986,7 +1002,7 @@ async function salvarUsuario() {
     mostrarToast('Usuário atualizado!', 'success');
   } else {
     const novoEmail = document.getElementById('userEmail') ? document.getElementById('userEmail').value.trim() : '';
-    state.usuarios.push({ id: gerarId(), nome, login, email: novoEmail, senha, perfil });
+    state.usuarios.push({ id: gerarId(), nome, login, email: novoEmail, perfil });
     const emailAuth = novoEmail || `${login}@trem-mineiro.app`;
     await criarAuthUser(emailAuth, senha);
     mostrarToast('Usuário criado!', 'success');
@@ -2012,7 +2028,7 @@ function trocarAuthTab(aba) {
 }
 
 // ── Login do cliente ─────────────────────────────────────────
-function fazerLoginCliente() {
+async function fazerLoginCliente() {
   const email = document.getElementById('authLoginEmail').value.trim().toLowerCase();
   const senha = document.getElementById('authLoginSenha').value;
   let valido  = true;
@@ -2025,11 +2041,22 @@ function fazerLoginCliente() {
   if (!senha)  { document.getElementById('authLoginSenhaErr').textContent = 'Informe a senha.'; valido = false; }
   if (!valido) return;
 
-  const cliente = state.clientes.find(c => (c.email || '').toLowerCase() === email && c.senhaHash === senha);
+  const senhaHash = await hashSenha(senha);
+  // Suporta senhas antigas (texto plano) e novas (hash SHA-256) — migra automaticamente
+  const cliente = state.clientes.find(c => {
+    if ((c.email || '').toLowerCase() !== email) return false;
+    if (isSenhaHash(c.senhaHash)) return c.senhaHash === senhaHash;
+    return c.senhaHash === senha; // senha antiga em texto plano
+  });
   if (!cliente) {
     document.getElementById('authLoginAlert').innerHTML =
       `<div class="alert alert-error">E-mail ou senha incorretos.</div>`;
     return;
+  }
+  // Migra senha antiga para hash
+  if (!isSenhaHash(cliente.senhaHash)) {
+    cliente.senhaHash = senhaHash;
+    persistir();
   }
 
   state.sessaoCliente = { id: cliente.id, nome: cliente.nome, email: cliente.email };
@@ -2045,7 +2072,7 @@ function fazerLoginCliente() {
 }
 
 // ── Cadastro do cliente ──────────────────────────────────────
-function cadastrarCliente() {
+async function cadastrarCliente() {
   const nome  = document.getElementById('authCadNome').value.trim();
   const email = document.getElementById('authCadEmail').value.trim().toLowerCase();
   const senha = document.getElementById('authCadSenha').value;
@@ -2075,7 +2102,7 @@ function cadastrarCliente() {
   }
 
   const novo = {
-    id: gerarId(), nome, email, senhaHash: senha,
+    id: gerarId(), nome, email, senhaHash: await hashSenha(senha),
     telefone: tel, aniversario: aniv, endereco: end,
     obs: '', compras: []
   };
@@ -2120,7 +2147,7 @@ function abrirMeusDados() {
   abrirModal('modalMeusDados');
 }
 
-function salvarMeusDados() {
+async function salvarMeusDados() {
   if (!state.sessaoCliente) return;
   const nome  = document.getElementById('mdNome').value.trim();
   const tel   = document.getElementById('mdTel').value.trim();
@@ -2138,7 +2165,7 @@ function salvarMeusDados() {
   state.clientes[idx].telefone    = tel;
   state.clientes[idx].aniversario = aniv;
   state.clientes[idx].endereco    = end;
-  if (senha && senha.length >= 6) state.clientes[idx].senhaHash = senha;
+  if (senha && senha.length >= 6) state.clientes[idx].senhaHash = await hashSenha(senha);
 
   state.sessaoCliente.nome = nome;
   salvarDados('sm_sessao_cliente', state.sessaoCliente);
