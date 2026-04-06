@@ -102,12 +102,14 @@ export async function carregarDoSupabase() {
     { data: prods },
     { data: cfgRow },
     { data: usrRows },
+    { data: estRows },
   ] = await Promise.race([
     Promise.all([
       sb.from('categorias').select('*').order('ordem'),
       sb.from('produtos').select('*').order('ordem'),
       sb.from('config').select('*').eq('id','main').maybeSingle(),
       sb.from('usuarios').select('*'),
+      sb.from('estoque').select('*'),
     ]),
     timeout
   ]);
@@ -137,6 +139,11 @@ export async function carregarDoSupabase() {
   }
   if (!state.config.heroMedia) state.config.heroMedia = [];
 
+  state.estoque = {};
+  (estRows || []).forEach(function(e) {
+    state.estoque[e.produto_id] = { quantidade: e.quantidade, minimo: e.minimo, maximo: e.maximo };
+  });
+
   // Não sincroniza automaticamente — admin faz isso manualmente após logar
 }
 
@@ -162,6 +169,7 @@ export async function carregarDadosAdmin() {
     sb.from('usuarios').select('*'),
   ]);
 
+  // Recarrega estoque com dados frescos do admin
   state.estoque = {};
   (estRows || []).forEach(function(e) {
     state.estoque[e.produto_id] = { quantidade: e.quantidade, minimo: e.minimo, maximo: e.maximo };
