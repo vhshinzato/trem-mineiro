@@ -3499,8 +3499,9 @@ function confirmarExcluirCliente(clienteId) {
   document.getElementById('confirmTitulo').textContent = 'Excluir Cliente';
   document.getElementById('confirmMsg').innerHTML =
     `Deseja excluir <strong>"${escapeHtml(c.nome)}"</strong>?<br>O histórico de compras também será removido.`;
-  document.getElementById('confirmOkBtn').onclick = () => {
+  document.getElementById('confirmOkBtn').onclick = async () => {
     state.clientes = state.clientes.filter(x => x.id !== clienteId);
+    try { await sb.from('clientes').delete().eq('id', clienteId); } catch(e) {}
     persistir();
     fecharModal('confirmModal');
     renderTabelaClientes();

@@ -303,8 +303,8 @@ async function syncToSupabase() {
     delOps.push(sb.from('categorias').delete().not('id', 'in', inList(state.categorias.map(function(c){ return c.id; }))));
   if (state.fornecedores.length)
     delOps.push(sb.from('fornecedores').delete().not('id', 'in', inList(state.fornecedores.map(function(f){ return f.id; }))));
-  if (state.clientes.length)
-    delOps.push(sb.from('clientes').delete().not('id', 'in', inList(state.clientes.map(function(c){ return c.id; }))));
+  // Clientes NÃO têm delete automático — são deletados explicitamente pelo admin
+  // (evita apagar clientes cadastrados via site público que não estão no state local)
 
   var prodIdsEstoque = Object.keys(state.estoque);
   if (prodIdsEstoque.length)
