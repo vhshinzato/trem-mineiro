@@ -1631,6 +1631,20 @@
       margin-bottom: .6rem;
     }
     .btn-pedido-wa:hover { background: #1ebe5d; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,211,102,.5); }
+    .btn-continuar-comprando {
+      width: 100%;
+      background: transparent;
+      color: var(--cafe-soft);
+      border: 1.5px solid var(--creme-dark);
+      border-radius: var(--radius-sm);
+      font-size: .88rem;
+      font-weight: 600;
+      padding: .6rem;
+      text-align: center;
+      margin-bottom: .5rem;
+      transition: background var(--trans), color var(--trans);
+    }
+    .btn-continuar-comprando:hover { background: var(--creme-mid); color: var(--cafe); }
     .btn-limpar-carrinho {
       width: 100%;
       background: transparent;
