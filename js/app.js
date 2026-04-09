@@ -2069,7 +2069,7 @@ async function fazerLoginCliente() {
     persistir();
   }
 
-  state.sessaoCliente = { id: cliente.id, nome: cliente.nome, email: cliente.email };
+  state.sessaoCliente = { id: cliente.id, nome: cliente.nome, email: cliente.email, telefone: cliente.telefone||'', aniversario: cliente.aniversario||'', endereco: cliente.endereco||'' };
   salvarDados('sm_sessao_cliente', state.sessaoCliente);
   fecharModal('modalClienteAuth');
   atualizarBotaoCliente();
@@ -2120,7 +2120,7 @@ async function cadastrarCliente() {
   persistir();
 
   // Faz login automático
-  state.sessaoCliente = { id: novo.id, nome: novo.nome, email: novo.email };
+  state.sessaoCliente = { id: novo.id, nome: novo.nome, email: novo.email, telefone: novo.telefone||'', aniversario: novo.aniversario||'', endereco: novo.endereco||'' };
   salvarDados('sm_sessao_cliente', state.sessaoCliente);
 
   fecharModal('modalClienteAuth');
@@ -2144,8 +2144,7 @@ function logoutCliente() {
 function abrirMeusDados() {
   document.getElementById('clienteDropdown').classList.remove('open');
   if (!state.sessaoCliente) return;
-  const c = state.clientes.find(x => x.id === state.sessaoCliente.id);
-  if (!c) return;
+  const c = state.sessaoCliente;
 
   document.getElementById('mdNome').value  = c.nome        || '';
   document.getElementById('mdTel').value   = c.telefone    || '';
@@ -2168,17 +2167,22 @@ async function salvarMeusDados() {
   document.getElementById('mdNomeErr').textContent = '';
   if (!nome) { document.getElementById('mdNomeErr').textContent = 'Nome obrigatório.'; return; }
 
-  const idx = state.clientes.findIndex(c => c.id === state.sessaoCliente.id);
-  if (idx === -1) return;
-
-  state.clientes[idx].nome        = nome;
-  state.clientes[idx].telefone    = tel;
-  state.clientes[idx].aniversario = aniv;
-  state.clientes[idx].endereco    = end;
-  if (senha && senha.length >= 6) state.clientes[idx].senhaHash = await hashSenha(senha);
-
-  state.sessaoCliente.nome = nome;
+  // Atualiza na sessão (sempre disponível)
+  state.sessaoCliente.nome        = nome;
+  state.sessaoCliente.telefone    = tel;
+  state.sessaoCliente.aniversario = aniv;
+  state.sessaoCliente.endereco    = end;
   salvarDados('sm_sessao_cliente', state.sessaoCliente);
+
+  // Atualiza em state.clientes se carregado (painel admin)
+  const idx = state.clientes.findIndex(c => c.id === state.sessaoCliente.id);
+  if (idx > -1) {
+    state.clientes[idx].nome        = nome;
+    state.clientes[idx].telefone    = tel;
+    state.clientes[idx].aniversario = aniv;
+    state.clientes[idx].endereco    = end;
+    if (senha && senha.length >= 6) state.clientes[idx].senhaHash = await hashSenha(senha);
+  }
 
   persistir();
   fecharModal('modalMeusDados');
