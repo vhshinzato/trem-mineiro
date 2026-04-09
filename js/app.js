@@ -2161,18 +2161,11 @@ async function cadastrarCliente() {
   if (!valido) return;
 
   // Verifica duplicidade de e-mail direto no Supabase
-  try {
-    const { data: exists } = await sb.from('clientes').select('id').ilike('email', email).maybeSingle();
-    if (exists) {
-      document.getElementById('authCadEmailErr').textContent = 'Este e-mail já está cadastrado.';
-      return;
-    }
-  } catch(e) {
-    // fallback: verifica em state.clientes
-    if (state.clientes.find(c => (c.email || '').toLowerCase() === email)) {
-      document.getElementById('authCadEmailErr').textContent = 'Este e-mail já está cadastrado.';
-      return;
-    }
+  // Nota: Supabase JS não lança exceção — retorna { data, error }
+  const { data: exists } = await sb.from('clientes').select('id').ilike('email', email).maybeSingle();
+  if (exists) {
+    document.getElementById('authCadEmailErr').textContent = 'Este e-mail já está cadastrado.';
+    return;
   }
 
   const novo = {
