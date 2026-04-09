@@ -2084,22 +2084,45 @@ async function fazerLoginCliente() {
   if (!valido) return;
 
   const senhaHash = await hashSenha(senha);
-  // Suporta senhas antigas (texto plano) e novas (hash SHA-256) — migra automaticamente
-  const cliente = state.clientes.find(c => {
-    if ((c.email || '').toLowerCase() !== email) return false;
-    if (isSenhaHash(c.senhaHash)) return c.senhaHash === senhaHash;
-    return c.senhaHash === senha; // senha antiga em texto plano
-  });
-  if (!cliente) {
+
+  // Busca cliente no Supabase por email (state.clientes está vazio no lado público)
+  let clienteRow = null;
+  try {
+    const { data } = await sb.from('clientes').select('*').ilike('email', email).maybeSingle();
+    clienteRow = data;
+  } catch(e) { /* fallback para state.clientes abaixo */ }
+
+  // Fallback: procura em state.clientes se carregado (admin)
+  if (!clienteRow) {
+    clienteRow = state.clientes.find(c => (c.email || '').toLowerCase() === email) || null;
+    if (clienteRow) clienteRow = { ...clienteRow, senha_hash: clienteRow.senhaHash };
+  }
+
+  if (!clienteRow) {
     document.getElementById('authLoginAlert').innerHTML =
       `<div class="alert alert-error">E-mail ou senha incorretos.</div>`;
     return;
   }
-  // Migra senha antiga para hash
-  if (!isSenhaHash(cliente.senhaHash)) {
-    cliente.senhaHash = senhaHash;
-    persistir();
+
+  const hashSalvo = clienteRow.senha_hash || clienteRow.senhaHash || '';
+  // Suporta senhas antigas (texto plano) e novas (hash SHA-256)
+  const senhaCorreta = isSenhaHash(hashSalvo) ? hashSalvo === senhaHash : hashSalvo === senha;
+  if (!senhaCorreta) {
+    document.getElementById('authLoginAlert').innerHTML =
+      `<div class="alert alert-error">E-mail ou senha incorretos.</div>`;
+    return;
   }
+
+  // Migra senha antiga para hash no Supabase
+  if (!isSenhaHash(hashSalvo)) {
+    sb.from('clientes').update({ senha_hash: senhaHash }).eq('id', clienteRow.id).then(() => {});
+  }
+
+  const cliente = {
+    id: clienteRow.id, nome: clienteRow.nome, email: clienteRow.email,
+    telefone: clienteRow.telefone||'', aniversario: clienteRow.aniversario||'',
+    endereco: clienteRow.endereco||''
+  };
 
   state.sessaoCliente = { id: cliente.id, nome: cliente.nome, email: cliente.email, telefone: cliente.telefone||'', aniversario: cliente.aniversario||'', endereco: cliente.endereco||'' };
   salvarDados('sm_sessao_cliente', state.sessaoCliente);
@@ -2137,10 +2160,19 @@ async function cadastrarCliente() {
   }
   if (!valido) return;
 
-  // Verifica duplicidade de e-mail
-  if (state.clientes.find(c => (c.email || '').toLowerCase() === email)) {
-    document.getElementById('authCadEmailErr').textContent = 'Este e-mail já está cadastrado.';
-    return;
+  // Verifica duplicidade de e-mail direto no Supabase
+  try {
+    const { data: exists } = await sb.from('clientes').select('id').ilike('email', email).maybeSingle();
+    if (exists) {
+      document.getElementById('authCadEmailErr').textContent = 'Este e-mail já está cadastrado.';
+      return;
+    }
+  } catch(e) {
+    // fallback: verifica em state.clientes
+    if (state.clientes.find(c => (c.email || '').toLowerCase() === email)) {
+      document.getElementById('authCadEmailErr').textContent = 'Este e-mail já está cadastrado.';
+      return;
+    }
   }
 
   const novo = {
