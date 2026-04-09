@@ -1910,7 +1910,7 @@ function limparCarrinho() {
 }
 
 // ── Finalizar pedido via WhatsApp ────────────────────────────
-function finalizarPedido() {
+async function finalizarPedido() {
   if (state.carrinho.length === 0) return;
 
   // Guarda obrigatório: precisa estar logado
@@ -1922,14 +1922,22 @@ function finalizarPedido() {
   const num   = state.config.whatsapp || WHATSAPP_DEFAULT;
   const total = state.carrinho.reduce((s, c) => s + c.precoNum * c.quantidade, 0);
 
-  // Gera número do pedido: DDMMAAAA-HHmm (único e legível)
-  const agora = new Date();
-  const dd    = String(agora.getDate()).padStart(2,'0');
-  const mm    = String(agora.getMonth()+1).padStart(2,'0');
-  const aaaa  = agora.getFullYear();
-  const hh    = String(agora.getHours()).padStart(2,'0');
-  const min   = String(agora.getMinutes()).padStart(2,'0');
-  const numeroPedido = `${dd}${mm}${aaaa}-${hh}${min}`;
+  // Gera número do pedido: DDMMAAAA-NNN (sequencial por dia)
+  const agora  = new Date();
+  const dd     = String(agora.getDate()).padStart(2,'0');
+  const mm     = String(agora.getMonth()+1).padStart(2,'0');
+  const aaaa   = agora.getFullYear();
+  const prefixo = `${dd}${mm}${aaaa}`;
+  // Conta pedidos de hoje no Supabase para manter sequência correta
+  let seq = 1;
+  try {
+    const { data: pedidosHoje } = await sb.from('pedidos').select('numero').like('numero', `${prefixo}-%`);
+    seq = (pedidosHoje ? pedidosHoje.length : 0) + 1;
+  } catch(e) {
+    // fallback: conta no state local
+    seq = state.pedidos.filter(p => p.numero && p.numero.startsWith(prefixo)).length + 1;
+  }
+  const numeroPedido = `${prefixo}-${String(seq).padStart(3,'0')}`;
 
   // Salva o pedido como pendente
   const novoPedido = {
