@@ -1922,10 +1922,19 @@ function finalizarPedido() {
   const num   = state.config.whatsapp || WHATSAPP_DEFAULT;
   const total = state.carrinho.reduce((s, c) => s + c.precoNum * c.quantidade, 0);
 
+  // Gera número do pedido: DDMMAAAA-HHmm (único e legível)
+  const agora = new Date();
+  const dd    = String(agora.getDate()).padStart(2,'0');
+  const mm    = String(agora.getMonth()+1).padStart(2,'0');
+  const aaaa  = agora.getFullYear();
+  const hh    = String(agora.getHours()).padStart(2,'0');
+  const min   = String(agora.getMinutes()).padStart(2,'0');
+  const numeroPedido = `${dd}${mm}${aaaa}-${hh}${min}`;
+
   // Salva o pedido como pendente
   const novoPedido = {
     id:        gerarId(),
-    numero:    'PED-' + String(state.pedidos.length + 1).padStart(4, '0'),
+    numero:    numeroPedido,
     data:      new Date().toISOString(),
     status:    'pendente',
     clienteId: state.sessaoCliente.id,
@@ -1952,6 +1961,7 @@ function finalizarPedido() {
   window.open(url, '_blank');
 
   limparCarrinho();
+  fecharCarrinho();
   mostrarToast(`Pedido ${novoPedido.numero} registrado! ✓`, 'success');
 }
 
@@ -2116,8 +2126,15 @@ async function cadastrarCliente() {
     telefone: tel, aniversario: aniv, endereco: end,
     obs: '', compras: []
   };
-  state.clientes.push(novo);
-  persistir();
+  // Upsert direto no Supabase — NÃO usa persistir() para evitar DELETE dos outros clientes
+  // (no lado público state.clientes só tem este novo cliente)
+  try {
+    await sb.from('clientes').upsert([{
+      id: novo.id, nome: novo.nome, email: novo.email, senha_hash: novo.senhaHash,
+      telefone: novo.telefone||null, aniversario: novo.aniversario||null,
+      endereco: novo.endereco||null, obs: null
+    }]);
+  } catch(e) { console.error('Erro ao salvar cliente:', e); }
 
   // Faz login automático
   state.sessaoCliente = { id: novo.id, nome: novo.nome, email: novo.email, telefone: novo.telefone||'', aniversario: novo.aniversario||'', endereco: novo.endereco||'' };
