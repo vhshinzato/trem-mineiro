@@ -1953,8 +1953,16 @@ async function finalizarPedido() {
     })),
     total
   };
-  state.pedidos.unshift(novoPedido);
-  persistir();
+  // Insere direto no Supabase — NÃO adiciona ao state.pedidos do lado público
+  // para evitar que um persistir() futuro sobrescreva o status confirmado pelo admin
+  try {
+    await sb.from('pedidos').insert({
+      id: novoPedido.id, numero: novoPedido.numero, status: novoPedido.status,
+      cliente_id: novoPedido.clienteId, cliente_nome: novoPedido.clienteNome,
+      itens: novoPedido.itens, total: novoPedido.total,
+      data: novoPedido.data
+    });
+  } catch(e) { console.error('Erro ao salvar pedido:', e); }
 
   // Monta e envia a mensagem no WhatsApp
   let msg = `🛒 *Pedido ${novoPedido.numero} — Trem Mineiro*\n\n`;

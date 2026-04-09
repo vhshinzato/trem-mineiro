@@ -277,7 +277,8 @@ async function syncToSupabase() {
     }; })); }, []);
     if (todasCompras.length) ops.push(sb.from('compras').upsert(todasCompras));
   }
-  if (state.pedidos.length)
+  // Pedidos só sincronizados pelo admin — nunca pelo lado público
+  if (state.sessao && state.pedidos.length)
     ops.push(sb.from('pedidos').upsert(state.pedidos.map(function(p){ return {
       id:p.id, numero:p.numero, status:p.status,
       cliente_id:p.clienteId||null, cliente_nome:p.clienteNome||null,
