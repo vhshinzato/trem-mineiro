@@ -24,6 +24,33 @@ function isSenhaHash(s) {
 }
 
 /* ============================================================
+   ENDEREÇO — PARSE / FORMAT / STRINGIFY
+============================================================ */
+function parseEndereco(str) {
+  if (!str) return { rua:'', numero:'', cidade:'', estado:'', cep:'' };
+  try {
+    const p = JSON.parse(str);
+    if (p && typeof p === 'object' && 'rua' in p) return p;
+  } catch(e) {}
+  // Texto plano legado → coloca tudo em "rua"
+  return { rua: str, numero:'', cidade:'', estado:'', cep:'' };
+}
+function formatEndereco(endStr) {
+  const e = parseEndereco(endStr);
+  const parts = [
+    e.rua,
+    e.numero  ? `nº ${e.numero}` : '',
+    e.cidade,
+    e.estado,
+    e.cep     ? `CEP ${e.cep}`   : ''
+  ].filter(Boolean);
+  return parts.join(', ');
+}
+function stringifyEndereco(rua, numero, cidade, estado, cep) {
+  return JSON.stringify({ rua, numero, cidade, estado, cep });
+}
+
+/* ============================================================
    RENDERIZAÇÃO DA ÁREA PÚBLICA
 ============================================================ */
 var _renderCardapioTimer = null;
@@ -2044,7 +2071,7 @@ function abrirModalClienteAuth() {
   trocarAuthTab('login');
   // Limpa campos
   ['authLoginEmail','authLoginSenha','authCadNome','authCadEmail','authCadSenha',
-   'authCadTel','authCadAniv','authCadEnd'].forEach(id => {
+   'authCadTel','authCadAniv','authCadRua','authCadNum','authCadCidade','authCadEstado','authCadCep'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.value = ''; el.classList.remove('error'); }
   });
@@ -2143,7 +2170,13 @@ async function cadastrarCliente() {
   const senha = document.getElementById('authCadSenha').value;
   const tel   = document.getElementById('authCadTel').value.trim();
   const aniv  = document.getElementById('authCadAniv').value;
-  const end   = document.getElementById('authCadEnd').value.trim();
+  const end   = stringifyEndereco(
+    document.getElementById('authCadRua').value.trim(),
+    document.getElementById('authCadNum').value.trim(),
+    document.getElementById('authCadCidade').value.trim(),
+    document.getElementById('authCadEstado').value.trim().toUpperCase(),
+    document.getElementById('authCadCep').value.trim()
+  );
   let valido  = true;
 
   ['authCadNomeErr','authCadEmailErr','authCadSenhaErr'].forEach(id =>
@@ -2210,11 +2243,16 @@ function abrirMeusDados() {
   if (!state.sessaoCliente) return;
   const c = state.sessaoCliente;
 
-  document.getElementById('mdNome').value  = c.nome        || '';
-  document.getElementById('mdTel').value   = c.telefone    || '';
-  document.getElementById('mdAniv').value  = c.aniversario || '';
-  document.getElementById('mdEnd').value   = c.endereco    || '';
-  document.getElementById('mdSenha').value = '';
+  const end = parseEndereco(c.endereco);
+  document.getElementById('mdNome').value    = c.nome        || '';
+  document.getElementById('mdTel').value     = c.telefone    || '';
+  document.getElementById('mdAniv').value    = c.aniversario || '';
+  document.getElementById('mdRua').value     = end.rua       || '';
+  document.getElementById('mdNum').value     = end.numero    || '';
+  document.getElementById('mdCidade').value  = end.cidade    || '';
+  document.getElementById('mdEstado').value  = end.estado    || '';
+  document.getElementById('mdCep').value     = end.cep       || '';
+  document.getElementById('mdSenha').value   = '';
   document.getElementById('mdNomeErr').textContent   = '';
   document.getElementById('meusDadosAlert').innerHTML = '';
   abrirModal('modalMeusDados');
@@ -2225,7 +2263,13 @@ async function salvarMeusDados() {
   const nome  = document.getElementById('mdNome').value.trim();
   const tel   = document.getElementById('mdTel').value.trim();
   const aniv  = document.getElementById('mdAniv').value;
-  const end   = document.getElementById('mdEnd').value.trim();
+  const end   = stringifyEndereco(
+    document.getElementById('mdRua').value.trim(),
+    document.getElementById('mdNum').value.trim(),
+    document.getElementById('mdCidade').value.trim(),
+    document.getElementById('mdEstado').value.trim().toUpperCase(),
+    document.getElementById('mdCep').value.trim()
+  );
   const senha = document.getElementById('mdSenha').value;
 
   document.getElementById('mdNomeErr').textContent = '';
@@ -3461,7 +3505,7 @@ function renderTabelaClientes() {
       <td>${c.email
         ? `<a href="mailto:${escapeHtml(c.email)}" style="color:var(--terra);font-size:.85rem;">${escapeHtml(c.email)}</a>`
         : '<span style="color:var(--cinza)">—</span>'}</td>
-      <td style="font-size:.82rem;max-width:160px;">${c.endereco ? escapeHtml(c.endereco) : '<span style="color:var(--cinza)">—</span>'}</td>
+      <td style="font-size:.82rem;max-width:160px;">${c.endereco ? escapeHtml(formatEndereco(c.endereco)) : '<span style="color:var(--cinza)">—</span>'}</td>
       <td>
         <span style="font-family:var(--font-serif);font-weight:800;color:var(--terra);">${totalGasto.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span><br>
         <span style="font-size:.74rem;color:var(--cinza);">${compras.length} compra${compras.length!==1?'s':''}</span>
@@ -3486,7 +3530,9 @@ function toggleFiltroAniversario(btn) {
 }
 
 function abrirModalCliente(clienteId) {
-  ['clienteNome','clienteAniversario','clienteTelefone','clienteEmail','clienteEndereco','clienteObs','clienteSenha']
+  ['clienteNome','clienteAniversario','clienteTelefone','clienteEmail',
+   'clienteRua','clienteNum','clienteCidade','clienteEstado','clienteCep',
+   'clienteObs','clienteSenha']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('clienteEditId').value = '';
   document.getElementById('clienteNomeErr').textContent = '';
@@ -3501,7 +3547,12 @@ function abrirModalCliente(clienteId) {
     document.getElementById('clienteAniversario').value = c.aniversario || '';
     document.getElementById('clienteTelefone').value    = c.telefone   || '';
     document.getElementById('clienteEmail').value       = c.email      || '';
-    document.getElementById('clienteEndereco').value    = c.endereco   || '';
+    const endAdmin = parseEndereco(c.endereco);
+    document.getElementById('clienteRua').value        = endAdmin.rua    || '';
+    document.getElementById('clienteNum').value        = endAdmin.numero || '';
+    document.getElementById('clienteCidade').value     = endAdmin.cidade || '';
+    document.getElementById('clienteEstado').value     = endAdmin.estado || '';
+    document.getElementById('clienteCep').value        = endAdmin.cep    || '';
     document.getElementById('clienteObs').value         = c.obs        || '';
   } else {
     document.getElementById('modalClienteTitulo').textContent = 'Novo Cliente';
@@ -3514,7 +3565,13 @@ async function salvarCliente() {
   const aniversario = document.getElementById('clienteAniversario').value;
   const telefone    = document.getElementById('clienteTelefone').value.trim();
   const email       = document.getElementById('clienteEmail').value.trim();
-  const endereco    = document.getElementById('clienteEndereco').value.trim();
+  const endereco    = stringifyEndereco(
+    document.getElementById('clienteRua').value.trim(),
+    document.getElementById('clienteNum').value.trim(),
+    document.getElementById('clienteCidade').value.trim(),
+    document.getElementById('clienteEstado').value.trim().toUpperCase(),
+    document.getElementById('clienteCep').value.trim()
+  );
   const obs         = document.getElementById('clienteObs').value.trim();
   const novaSenha   = document.getElementById('clienteSenha') ? document.getElementById('clienteSenha').value : '';
   const editId      = document.getElementById('clienteEditId').value;
