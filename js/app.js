@@ -3297,7 +3297,19 @@ function executarConfirmarPedido() {
   ped.totalFinal      = totalFinal;
   ped.desconto        = descontoVal;
   ped.obs             = obs;
-  persistir();
+
+  // Salva status direto no Supabase — não depende do debounce do persistir()
+  sb.from('pedidos').upsert({
+    id: ped.id, numero: ped.numero, status: ped.status,
+    cliente_id: ped.clienteId||null, cliente_nome: ped.clienteNome||null,
+    itens: ped.itens||[], total: ped.total,
+    total_final: ped.totalFinal, desconto: ped.desconto, obs: ped.obs||null,
+    data: ped.data, data_confirmacao: ped.dataConfirmacao
+  }).then(function(res) {
+    if (res.error) console.error('Erro ao confirmar pedido no Supabase:', res.error);
+  });
+
+  persistir(); // salva estoque, movimentos, clientes
 
   fecharModal('modalConfPedido');
   renderTabelaPedidos();
@@ -3325,6 +3337,9 @@ function cancelarPedido(pedId) {
   document.getElementById('confirmOkBtn').onclick = () => {
     ped.status = 'cancelado';
     ped.dataCancelamento = new Date().toISOString();
+    sb.from('pedidos').update({ status: 'cancelado', data_confirmacao: ped.dataCancelamento })
+      .eq('id', ped.id)
+      .then(function(res) { if (res.error) console.error('Erro ao cancelar pedido:', res.error); });
     persistir();
     fecharModal('confirmModal');
     renderTabelaPedidos();
