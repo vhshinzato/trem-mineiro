@@ -2056,6 +2056,12 @@ function abrirModalClienteAuth() {
   abrirModal('modalClienteAuth');
 }
 
+function esqueceuSenha() {
+  const num = state.config.whatsapp || WHATSAPP_DEFAULT;
+  const msg = encodeURIComponent('Olá! Esqueci minha senha do site e preciso de ajuda para redefinir. 😊');
+  window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+}
+
 function trocarAuthTab(aba) {
   document.getElementById('painelAuthLogin').style.display    = aba === 'login'    ? '' : 'none';
   document.getElementById('painelAuthCadastro').style.display = aba === 'cadastro' ? '' : 'none';
@@ -3455,8 +3461,8 @@ function toggleFiltroAniversario(btn) {
 }
 
 function abrirModalCliente(clienteId) {
-  ['clienteNome','clienteAniversario','clienteTelefone','clienteEmail','clienteEndereco','clienteObs']
-    .forEach(id => { document.getElementById(id).value = ''; });
+  ['clienteNome','clienteAniversario','clienteTelefone','clienteEmail','clienteEndereco','clienteObs','clienteSenha']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('clienteEditId').value = '';
   document.getElementById('clienteNomeErr').textContent = '';
   document.getElementById('clienteNome').classList.remove('error');
@@ -3478,13 +3484,14 @@ function abrirModalCliente(clienteId) {
   abrirModal('modalCliente');
 }
 
-function salvarCliente() {
+async function salvarCliente() {
   const nome        = document.getElementById('clienteNome').value.trim();
   const aniversario = document.getElementById('clienteAniversario').value;
   const telefone    = document.getElementById('clienteTelefone').value.trim();
   const email       = document.getElementById('clienteEmail').value.trim();
   const endereco    = document.getElementById('clienteEndereco').value.trim();
   const obs         = document.getElementById('clienteObs').value.trim();
+  const novaSenha   = document.getElementById('clienteSenha') ? document.getElementById('clienteSenha').value : '';
   const editId      = document.getElementById('clienteEditId').value;
 
   document.getElementById('clienteNomeErr').textContent = '';
@@ -3497,7 +3504,12 @@ function salvarCliente() {
 
   if (editId) {
     const idx = state.clientes.findIndex(c => c.id === editId);
-    if (idx > -1) state.clientes[idx] = { ...state.clientes[idx], nome, aniversario, telefone, email, endereco, obs };
+    if (idx > -1) {
+      state.clientes[idx] = { ...state.clientes[idx], nome, aniversario, telefone, email, endereco, obs };
+      if (novaSenha && novaSenha.length >= 6) {
+        state.clientes[idx].senhaHash = await hashSenha(novaSenha);
+      }
+    }
     mostrarToast('Cliente atualizado! ✓', 'success');
   } else {
     state.clientes.push({ id: gerarId(), nome, aniversario, telefone, email, endereco, obs, compras: [] });

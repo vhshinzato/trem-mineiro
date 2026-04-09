@@ -207,7 +207,10 @@
         <div class="error-msg" id="authLoginSenhaErr"></div>
       </div>
       <button class="btn btn-primary btn-full" onclick="fazerLoginCliente()">Entrar</button>
-      <p style="text-align:center;font-size:.8rem;color:var(--cinza);margin-top:.9rem;">
+      <p style="text-align:center;font-size:.8rem;color:var(--cinza);margin-top:.6rem;">
+        <button onclick="esqueceuSenha()" style="background:none;border:none;color:var(--cafe-soft);font-size:.8rem;cursor:pointer;text-decoration:underline;">Esqueci minha senha</button>
+      </p>
+      <p style="text-align:center;font-size:.8rem;color:var(--cinza);margin-top:.4rem;">
         Não tem conta?
         <button onclick="trocarAuthTab('cadastro')" style="background:none;border:none;color:var(--terra);font-weight:700;cursor:pointer;font-size:.8rem;">Cadastre-se grátis</button>
       </p>
@@ -1176,6 +1179,13 @@
       <div class="form-group" style="grid-column:1/-1;">
         <label class="form-label">Observações</label>
         <textarea class="form-textarea" id="clienteObs" placeholder="Preferências, restrições, como conheceu a loja…" style="min-height:60px;"></textarea>
+      </div>
+      <div class="form-group" style="grid-column:1/-1;" id="clienteSenhaWrap">
+        <label class="form-label">Nova senha <span style="font-weight:400;color:var(--cinza)">(deixe em branco para não alterar)</span></label>
+        <div class="input-senha-wrap">
+          <input type="password" class="form-input" id="clienteSenha" placeholder="Mínimo 6 caracteres" />
+          <button type="button" class="btn-ver-senha" onclick="toggleSenha('clienteSenha',this)" tabindex="-1">👁</button>
+        </div>
       </div>
     </div>
 
