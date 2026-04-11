@@ -277,16 +277,8 @@ async function syncToSupabase() {
     }; })); }, []);
     if (todasCompras.length) ops.push(sb.from('compras').upsert(todasCompras));
   }
-  // Pedidos só sincronizados pelo admin — nunca pelo lado público
-  if (state.sessao && state.pedidos.length)
-    ops.push(sb.from('pedidos').upsert(state.pedidos.map(function(p){ return {
-      id:p.id, numero:p.numero, status:p.status,
-      cliente_id:p.clienteId||null, cliente_nome:p.clienteNome||null,
-      itens:p.itens||[], total:p.total,
-      total_final:p.totalFinal != null ? p.totalFinal : null,
-      desconto:p.desconto||0, obs:p.obs||null,
-      data:p.data, data_confirmacao:p.dataConfirmacao||null
-    }; })));
+  // Pedidos NÃO são sincronizados via persistir() — cada ação (confirmar/cancelar/inserir)
+  // faz operação direta no Supabase para evitar que estado antigo sobrescreva status confirmado.
   if (state.usuarios.length)
     ops.push(sb.from('usuarios').upsert(state.usuarios.map(function(u){ return {
       id:u.id, nome:u.nome, login:u.login, email:u.email||null, perfil:u.perfil

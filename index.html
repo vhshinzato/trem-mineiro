@@ -413,11 +413,12 @@
       </div>
 
       <!-- Filtros de status -->
-      <div class="pedidos-filtros">
+      <div class="pedidos-filtros" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
         <button class="estoque-filtro-btn active" onclick="filtrarPedidos('todos', this)">Todos</button>
         <button class="estoque-filtro-btn" onclick="filtrarPedidos('pendente', this)">⏳ Pendentes</button>
         <button class="estoque-filtro-btn" onclick="filtrarPedidos('confirmado', this)">✅ Confirmados</button>
         <button class="estoque-filtro-btn" onclick="filtrarPedidos('cancelado', this)">✕ Cancelados</button>
+        <button class="btn btn-outline btn-sm" onclick="atualizarPedidos(this)" style="margin-left:auto;" title="Recarregar pedidos do servidor">🔄 Atualizar</button>
       </div>
 
       <div id="pedidosLista"></div>

@@ -1937,7 +1937,9 @@ function limparCarrinho() {
 }
 
 // ── Finalizar pedido via WhatsApp ────────────────────────────
+var _enviandoPedido = false;
 async function finalizarPedido() {
+  if (_enviandoPedido) return; // guard contra duplo clique
   if (state.carrinho.length === 0) return;
 
   // Guarda obrigatório: precisa estar logado
@@ -1945,6 +1947,7 @@ async function finalizarPedido() {
     pedirLoginParaPedido();
     return;
   }
+  _enviandoPedido = true;
 
   const num   = state.config.whatsapp || WHATSAPP_DEFAULT;
   const total = state.carrinho.reduce((s, c) => s + c.precoNum * c.quantidade, 0);
@@ -2003,6 +2006,7 @@ async function finalizarPedido() {
   const url = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 
+  _enviandoPedido = false;
   limparCarrinho();
   fecharCarrinho();
   mostrarToast(`Pedido ${novoPedido.numero} registrado! ✓`, 'success');
@@ -3071,6 +3075,31 @@ function filtrarPedidos(status, btn) {
     .forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderTabelaPedidos();
+}
+
+async function atualizarPedidos(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  try {
+    const { data: pedRows } = await sb.from('pedidos').select('*').order('data', { ascending: false });
+    if (pedRows) {
+      state.pedidos = pedRows.map(function(p) { return {
+        id: p.id, numero: p.numero, status: p.status,
+        clienteId: p.cliente_id||null, clienteNome: p.cliente_nome||'Cliente não identificado',
+        itens: p.itens||[], total: parseFloat(p.total)||0,
+        totalFinal: p.total_final ? parseFloat(p.total_final) : null,
+        desconto: parseFloat(p.desconto)||0, obs: p.obs||'',
+        data: p.data, dataConfirmacao: p.data_confirmacao||null
+      }; });
+    }
+    renderTabelaPedidos();
+    atualizarBadgePedidos();
+    mostrarToast('Pedidos atualizados!', 'success');
+  } catch(e) {
+    console.error('Erro ao atualizar pedidos:', e);
+    mostrarToast('Erro ao atualizar pedidos.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 Atualizar'; }
+  }
 }
 
 function atualizarBadgePedidos() {
@@ -4612,6 +4641,7 @@ if (typeof fazerLogout !== "undefined") window.fazerLogout = fazerLogout;
 if (typeof fecharCarrinho !== "undefined") window.fecharCarrinho = fecharCarrinho;
 if (typeof fecharModal !== "undefined") window.fecharModal = fecharModal;
 if (typeof filtrarPedidos !== "undefined") window.filtrarPedidos = filtrarPedidos;
+if (typeof atualizarPedidos !== "undefined") window.atualizarPedidos = atualizarPedidos;
 if (typeof filtrarPorCategoria !== "undefined") window.filtrarPorCategoria = filtrarPorCategoria;
 if (typeof filtroEstoqueStatus !== "undefined") window.filtroEstoqueStatus = filtroEstoqueStatus;
 if (typeof finalizarPedido !== "undefined") window.finalizarPedido = finalizarPedido;
