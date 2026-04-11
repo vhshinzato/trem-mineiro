@@ -298,6 +298,15 @@ async function syncToSupabase() {
   // Clientes NÃO têm delete automático — são deletados explicitamente pelo admin
   // (evita apagar clientes cadastrados via site público que não estão no state local)
 
+  // Compras: remove do DB as excluídas do state (só quando admin carregou todos os dados)
+  if (state._adminCarregado) {
+    var todosCompraIds = state.clientes.reduce(function(acc, c) {
+      return acc.concat((c.compras||[]).map(function(cp){ return cp.id; }).filter(Boolean));
+    }, []);
+    if (todosCompraIds.length)
+      delOps.push(sb.from('compras').delete().not('id', 'in', inList(todosCompraIds)));
+  }
+
   var prodIdsEstoque = Object.keys(state.estoque);
   if (prodIdsEstoque.length)
     delOps.push(sb.from('estoque').delete().not('produto_id', 'in', inList(prodIdsEstoque)));

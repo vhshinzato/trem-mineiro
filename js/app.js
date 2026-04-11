@@ -3731,19 +3731,21 @@ function adicionarCompra() {
   mostrarToast('Compra registrada! ✓', 'success');
 }
 
-function removerCompra(idxReversed) {
+async function removerCompra(idxReversed) {
   const c = state.clientes.find(x => x.id === _clienteHistId);
   if (!c || !c.compras) return;
   const idxReal = c.compras.length - 1 - idxReversed;
   const compraId = c.compras[idxReal] ? c.compras[idxReal].id : null;
   c.compras.splice(idxReal, 1);
-  // Deleta direto no Supabase — persistir() só faz upsert, não remove registros excluídos
+  // Deleta direto no Supabase e exibe erro caso RLS ou outro problema bloqueie
   if (compraId) {
-    sb.from('compras').delete().eq('id', compraId).then(function(res) {
-      if (res.error) console.error('Erro ao remover compra:', res.error);
-    });
+    const { error } = await sb.from('compras').delete().eq('id', compraId);
+    if (error) {
+      console.error('Erro ao remover compra do Supabase:', error);
+      mostrarToast('Erro ao remover do banco: ' + (error.message || error.code), 'error');
+    }
   }
-  persistir(); // atualiza state.clientes no banco
+  persistir();
   renderResumoHistoricoCliente(c);
   renderListaCompras(c);
   renderTabelaClientes();
