@@ -3735,9 +3735,15 @@ function removerCompra(idxReversed) {
   const c = state.clientes.find(x => x.id === _clienteHistId);
   if (!c || !c.compras) return;
   const idxReal = c.compras.length - 1 - idxReversed;
-  const compraId = (c.compras[idxReal] ? c.compras[idxReal].id : null);
+  const compraId = c.compras[idxReal] ? c.compras[idxReal].id : null;
   c.compras.splice(idxReal, 1);
-  persistir();
+  // Deleta direto no Supabase — persistir() só faz upsert, não remove registros excluídos
+  if (compraId) {
+    sb.from('compras').delete().eq('id', compraId).then(function(res) {
+      if (res.error) console.error('Erro ao remover compra:', res.error);
+    });
+  }
+  persistir(); // atualiza state.clientes no banco
   renderResumoHistoricoCliente(c);
   renderListaCompras(c);
   renderTabelaClientes();
