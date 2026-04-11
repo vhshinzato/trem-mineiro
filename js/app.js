@@ -4537,6 +4537,45 @@ function _mostrarPreviewImport(erros) {
   }
 }
 
+// ── Zerar Estoque ─────────────────────────────────────────────
+function abrirModalZerarEstoque() {
+  document.getElementById('zerarConfirmInput').value = '';
+  document.getElementById('btnZerarConfirmar').disabled = true;
+  abrirModal('modalZerarEstoque');
+}
+
+async function executarZerarEstoque() {
+  const btn = document.getElementById('btnZerarConfirmar');
+  btn.disabled = true;
+  btn.textContent = 'Zerando…';
+  try {
+    // Zera todos os produtos no state
+    Object.keys(state.estoque).forEach(pid => {
+      state.estoque[pid].quantidade = 0;
+    });
+    // Upsert direto no Supabase
+    const rows = Object.keys(state.estoque).map(pid => ({
+      produto_id: pid,
+      quantidade: 0,
+      minimo: state.estoque[pid].minimo,
+      maximo: state.estoque[pid].maximo
+    }));
+    if (rows.length) {
+      const { error } = await sb.from('estoque').upsert(rows);
+      if (error) throw error;
+    }
+    fecharModal('modalZerarEstoque');
+    renderResumoEstoque();
+    renderTabelaEstoque();
+    mostrarToast('Estoque zerado com sucesso!', 'success');
+  } catch(e) {
+    console.error('Erro ao zerar estoque:', e);
+    mostrarToast('Erro ao zerar estoque.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Zerar tudo';
+  }
+}
+
 async function confirmarImport() {
   if (_importDados.length === 0) return;
   const btn = document.getElementById('btnConfirmarImport');
@@ -4692,4 +4731,6 @@ if (typeof removerVideo !== "undefined") window.removerVideo = removerVideo;
 if (typeof trocarAbaImport !== "undefined") window.trocarAbaImport = trocarAbaImport;
 if (typeof handleImportFile !== "undefined") window.handleImportFile = handleImportFile;
 if (typeof confirmarImport !== "undefined") window.confirmarImport = confirmarImport;
+if (typeof abrirModalZerarEstoque !== "undefined") window.abrirModalZerarEstoque = abrirModalZerarEstoque;
+if (typeof executarZerarEstoque !== "undefined") window.executarZerarEstoque = executarZerarEstoque;
 if (typeof baixarModeloExcel !== "undefined") window.baixarModeloExcel = baixarModeloExcel;

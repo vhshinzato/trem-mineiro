@@ -590,6 +590,7 @@
           <button class="btn btn-outline btn-sm" onclick="abrirModalMovimento('entrada')">＋ Entrada</button>
           <button class="btn btn-outline btn-sm" onclick="abrirModalMovimento('saida')">－ Saída</button>
           <button class="btn btn-outline btn-sm" onclick="abrirModalMovimento('ajuste')">✎ Ajuste</button>
+          <button class="btn btn-danger btn-sm" onclick="abrirModalZerarEstoque()">⚠ Zerar Estoque</button>
         </div>
       </div>
 
@@ -1368,6 +1369,27 @@
     <div class="confirm-actions">
       <button class="btn btn-secondary" onclick="fecharModal('confirmModal')">Cancelar</button>
       <button class="btn btn-danger" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ZERAR ESTOQUE -->
+<div class="modal-overlay" id="modalZerarEstoque">
+  <div class="modal-box" style="max-width:420px;">
+    <button class="modal-close" onclick="fecharModal('modalZerarEstoque')">✕</button>
+    <div class="confirm-icon">⚠️</div>
+    <div class="modal-title" style="text-align:center;color:var(--erro);">Zerar Todo o Estoque</div>
+    <p style="text-align:center;color:var(--cinza);font-size:.9rem;margin:.8rem 0 1.2rem;">
+      Esta ação vai zerar a quantidade de <strong>todos os produtos</strong> imediatamente.<br>
+      Para confirmar, digite <strong>ZERAR</strong> abaixo:
+    </p>
+    <div class="form-group">
+      <input type="text" class="form-input" id="zerarConfirmInput" placeholder="Digite ZERAR para confirmar"
+             oninput="document.getElementById('btnZerarConfirmar').disabled = this.value !== 'ZERAR';" />
+    </div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn btn-secondary" onclick="fecharModal('modalZerarEstoque')">Cancelar</button>
+      <button class="btn btn-danger" id="btnZerarConfirmar" disabled onclick="executarZerarEstoque()">Zerar tudo</button>
     </div>
   </div>
 </div>
