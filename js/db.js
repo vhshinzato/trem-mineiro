@@ -299,12 +299,16 @@ async function syncToSupabase() {
   // (evita apagar clientes cadastrados via site público que não estão no state local)
 
   // Compras: remove do DB as excluídas do state (só quando admin carregou todos os dados)
-  if (state._adminCarregado) {
+  if (state._adminCarregado && state.clientes.length) {
     var todosCompraIds = state.clientes.reduce(function(acc, c) {
       return acc.concat((c.compras||[]).map(function(cp){ return cp.id; }).filter(Boolean));
     }, []);
-    if (todosCompraIds.length)
+    if (todosCompraIds.length) {
       delOps.push(sb.from('compras').delete().not('id', 'in', inList(todosCompraIds)));
+    } else {
+      // Nenhuma compra no state — deleta todas do banco
+      delOps.push(sb.from('compras').delete().neq('id', 'NONE'));
+    }
   }
 
   var prodIdsEstoque = Object.keys(state.estoque);

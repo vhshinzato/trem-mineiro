@@ -3735,16 +3735,29 @@ async function removerCompra(idxReversed) {
   const c = state.clientes.find(x => x.id === _clienteHistId);
   if (!c || !c.compras) return;
   const idxReal = c.compras.length - 1 - idxReversed;
-  const compraId = c.compras[idxReal] ? c.compras[idxReal].id : null;
+  const compra  = c.compras[idxReal];
+  if (!compra) return;
+  const compraId = compra.id;
+
+  // Remove do state
   c.compras.splice(idxReal, 1);
-  // Deleta direto no Supabase e exibe erro caso RLS ou outro problema bloqueie
-  if (compraId) {
-    const { error } = await sb.from('compras').delete().eq('id', compraId);
-    if (error) {
-      console.error('Erro ao remover compra do Supabase:', error);
-      mostrarToast('Erro ao remover do banco: ' + (error.message || error.code), 'error');
-    }
+
+  // Deleta direto no Supabase
+  console.log('[removerCompra] deletando id:', compraId);
+  const { data: delData, error: delErr } = await sb.from('compras').delete().eq('id', compraId).select();
+  console.log('[removerCompra] resposta delete:', { delData, delErr });
+
+  if (delErr) {
+    mostrarToast('Erro ao remover: ' + (delErr.message || delErr.code), 'error');
+    console.error('[removerCompra] erro:', delErr);
   }
+
+  // Se o delete direto não removeu nenhuma linha (0 rows afetadas), tenta pelo cliente_id também
+  if (!delErr && (!delData || delData.length === 0)) {
+    console.warn('[removerCompra] delete não afetou linhas — tentando via cliente_id');
+    await sb.from('compras').delete().eq('cliente_id', c.id).eq('id', compraId);
+  }
+
   persistir();
   renderResumoHistoricoCliente(c);
   renderListaCompras(c);
