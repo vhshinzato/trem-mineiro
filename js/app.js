@@ -3735,30 +3735,26 @@ async function removerCompra(idxReversed) {
   const c = state.clientes.find(x => x.id === _clienteHistId);
   if (!c || !c.compras) return;
   const idxReal = c.compras.length - 1 - idxReversed;
-  const compra  = c.compras[idxReal];
-  if (!compra) return;
-  const compraId = compra.id;
+  if (!c.compras[idxReal]) return;
 
   // Remove do state
   c.compras.splice(idxReal, 1);
 
-  // Deleta direto no Supabase
-  console.log('[removerCompra] deletando id:', compraId);
-  const { data: delData, error: delErr } = await sb.from('compras').delete().eq('id', compraId).select();
-  console.log('[removerCompra] resposta delete:', { delData, delErr });
-
-  if (delErr) {
-    mostrarToast('Erro ao remover: ' + (delErr.message || delErr.code), 'error');
-    console.error('[removerCompra] erro:', delErr);
+  // Estratégia: apaga TODAS as compras do cliente no banco e re-insere as restantes.
+  // Evita problema de ID não bater (gerarId() vs chave real do banco).
+  try {
+    await sb.from('compras').delete().eq('cliente_id', c.id);
+    if (c.compras.length > 0) {
+      await sb.from('compras').insert(c.compras.map(cp => ({
+        id: cp.id, cliente_id: c.id,
+        data: cp.data, valor: cp.valor, produtos: cp.produtos || ''
+      })));
+    }
+  } catch(e) {
+    console.error('Erro ao persistir compras:', e);
+    mostrarToast('Erro ao salvar no banco.', 'error');
   }
 
-  // Se o delete direto não removeu nenhuma linha (0 rows afetadas), tenta pelo cliente_id também
-  if (!delErr && (!delData || delData.length === 0)) {
-    console.warn('[removerCompra] delete não afetou linhas — tentando via cliente_id');
-    await sb.from('compras').delete().eq('cliente_id', c.id).eq('id', compraId);
-  }
-
-  persistir();
   renderResumoHistoricoCliente(c);
   renderListaCompras(c);
   renderTabelaClientes();
