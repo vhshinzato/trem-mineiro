@@ -295,6 +295,14 @@ async function syncToSupabase() {
     delOps.push(sb.from('categorias').delete().not('id', 'in', inList(state.categorias.map(function(c){ return c.id; }))));
   if (state.fornecedores.length)
     delOps.push(sb.from('fornecedores').delete().not('id', 'in', inList(state.fornecedores.map(function(f){ return f.id; }))));
+  // Movimentos: remove do DB os excluídos do state (quando admin carregou os dados)
+  if (state._adminCarregado) {
+    if (state.movimentos.length) {
+      delOps.push(sb.from('movimentos').delete().not('id', 'in', inList(state.movimentos.map(function(m){ return m.id; }))));
+    } else {
+      delOps.push(sb.from('movimentos').delete().neq('id', 'NONE'));
+    }
+  }
   // Clientes NÃO têm delete automático — são deletados explicitamente pelo admin
   // (evita apagar clientes cadastrados via site público que não estão no state local)
 

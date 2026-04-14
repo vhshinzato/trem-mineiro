@@ -1598,8 +1598,11 @@ function renderHistorico() {
 function confirmarLimparHistorico() {
   document.getElementById('confirmTitulo').textContent = 'Limpar Histórico';
   document.getElementById('confirmMsg').innerHTML      = 'Deseja apagar <strong>todo o histórico</strong> de movimentações? Esta ação não pode ser desfeita.';
-  document.getElementById('confirmOkBtn').onclick = () => {
+  document.getElementById('confirmOkBtn').onclick = async () => {
     state.movimentos = [];
+    // Delete direto no Supabase — persistir() só faz upsert quando há itens, não limpa
+    const { error } = await sb.from('movimentos').delete().neq('id', 'NONE');
+    if (error) console.error('Erro ao limpar movimentos:', error);
     persistir();
     fecharModal('confirmModal');
     renderHistorico();
