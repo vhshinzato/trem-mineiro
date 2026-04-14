@@ -3332,12 +3332,14 @@ function renderTabelaPedidos() {
         ${ped.obs ? `<div style="font-size:.78rem;color:var(--cinza);margin-top:.4rem;">📝 ${escapeHtml(ped.obs)}</div>` : ''}
         ` : ''}
 
-      ${ped.status === 'pendente' ? `
       <div class="pedido-actions">
-        <button class="btn btn-primary btn-sm" onclick="confirmarPedido('${ped.id}')">✅ Confirmar venda</button>
-        <button class="btn btn-danger btn-sm" onclick="cancelarPedido('${ped.id}')">✕ Cancelar</button>
-        <button class="btn btn-outline btn-sm" onclick="reenviarWhatsapp('${ped.id}')">📲 Re-enviar WA</button>
-      </div>` : ''}
+        ${ped.status === 'pendente' ? `
+          <button class="btn btn-primary btn-sm" onclick="confirmarPedido('${ped.id}')">✅ Confirmar venda</button>
+          <button class="btn btn-danger btn-sm" onclick="cancelarPedido('${ped.id}')">✕ Cancelar</button>
+          <button class="btn btn-outline btn-sm" onclick="reenviarWhatsapp('${ped.id}')">📲 Re-enviar WA</button>
+        ` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deletarPedido('${ped.id}')">🗑 Deletar</button>
+      </div>
     `;
     wrap.appendChild(div);
   });
@@ -3588,6 +3590,26 @@ function cancelarPedido(pedId) {
     renderTabelaPedidos();
     atualizarBadgePedidos();
     mostrarToast(`Pedido ${ped.numero} cancelado.`, 'success');
+  };
+  abrirModal('confirmModal');
+}
+
+// ── Deletar pedido ────────────────────────────────────────────
+function deletarPedido(pedId) {
+  const ped = state.pedidos.find(p => p.id === pedId);
+  if (!ped) return;
+
+  document.getElementById('confirmTitulo').textContent = 'Deletar Pedido';
+  document.getElementById('confirmMsg').innerHTML =
+    `Deletar permanentemente o pedido <strong>${escapeHtml(ped.numero)}</strong>? Esta ação não pode ser desfeita.`;
+  document.getElementById('confirmOkBtn').onclick = async function() {
+    const { error } = await sb.from('pedidos').delete().eq('id', ped.id);
+    if (error) { mostrarToast('Erro ao deletar pedido.', 'error'); return; }
+    state.pedidos = state.pedidos.filter(p => p.id !== pedId);
+    fecharModal('confirmModal');
+    renderTabelaPedidos();
+    atualizarBadgePedidos();
+    mostrarToast(`Pedido ${ped.numero} deletado.`, 'success');
   };
   abrirModal('confirmModal');
 }
@@ -4802,6 +4824,7 @@ if (typeof ajusteRapido !== "undefined") window.ajusteRapido = ajusteRapido;
 if (typeof aplicarFiltroIntervalo !== "undefined") window.aplicarFiltroIntervalo = aplicarFiltroIntervalo;
 if (typeof cadastrarCliente !== "undefined") window.cadastrarCliente = cadastrarCliente;
 if (typeof cancelarPedido !== "undefined") window.cancelarPedido = cancelarPedido;
+if (typeof deletarPedido !== "undefined") window.deletarPedido = deletarPedido;
 if (typeof carrinhoAlterarQtd !== "undefined") window.carrinhoAlterarQtd = carrinhoAlterarQtd;
 if (typeof carrinhoRemover !== "undefined") window.carrinhoRemover = carrinhoRemover;
 if (typeof confirmarExcluirCategoria !== "undefined") window.confirmarExcluirCategoria = confirmarExcluirCategoria;
