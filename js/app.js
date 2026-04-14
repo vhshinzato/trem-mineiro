@@ -3529,7 +3529,7 @@ function executarConfirmarPedido() {
         obs
       ].filter(Boolean).join(' | ');
       cliente.compras.push({
-        id: gerarId(), data: dataStr,
+        id: gerarId(), pedidoId: ped.id, data: dataStr,
         valor: totalFinal, produtos: descObs
       });
       cliente.compras.sort((a, b) => a.data.localeCompare(b.data));
@@ -3606,6 +3606,14 @@ function deletarPedido(pedId) {
     const { error } = await sb.from('pedidos').delete().eq('id', ped.id);
     if (error) { mostrarToast('Erro ao deletar pedido.', 'error'); return; }
     state.pedidos = state.pedidos.filter(p => p.id !== pedId);
+    // Remove a compra vinculada ao pedido no histórico do cliente
+    if (ped.clienteId) {
+      const cliente = state.clientes.find(c => c.id === ped.clienteId);
+      if (cliente && cliente.compras) {
+        cliente.compras = cliente.compras.filter(c => c.pedidoId !== pedId);
+        persistir();
+      }
+    }
     fecharModal('confirmModal');
     renderTabelaPedidos();
     atualizarBadgePedidos();
