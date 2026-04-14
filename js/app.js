@@ -3742,17 +3742,20 @@ async function removerCompra(idxReversed) {
 
   // Estratégia: apaga TODAS as compras do cliente no banco e re-insere as restantes.
   // Evita problema de ID não bater (gerarId() vs chave real do banco).
-  try {
-    await sb.from('compras').delete().eq('cliente_id', c.id);
-    if (c.compras.length > 0) {
-      await sb.from('compras').insert(c.compras.map(cp => ({
-        id: cp.id, cliente_id: c.id,
-        data: cp.data, valor: cp.valor, produtos: cp.produtos || ''
-      })));
+  const { error: delErr } = await sb.from('compras').delete().eq('cliente_id', c.id);
+  if (delErr) {
+    mostrarToast('Erro ao deletar: ' + delErr.message, 'error');
+    return;
+  }
+  if (c.compras.length > 0) {
+    const { error: insErr } = await sb.from('compras').insert(c.compras.map(cp => ({
+      id: cp.id, cliente_id: c.id,
+      data: cp.data, valor: cp.valor, produtos: cp.produtos || ''
+    })));
+    if (insErr) {
+      mostrarToast('Erro ao reinserir: ' + insErr.message, 'error');
+      return;
     }
-  } catch(e) {
-    console.error('Erro ao persistir compras:', e);
-    mostrarToast('Erro ao salvar no banco.', 'error');
   }
 
   renderResumoHistoricoCliente(c);
