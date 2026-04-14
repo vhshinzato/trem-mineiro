@@ -1217,10 +1217,14 @@ function irParaCategoriaPopup() {
   // Fecha admin se estiver aberto
   const adminPanel = document.getElementById('adminPanel');
   if (adminPanel && adminPanel.classList.contains('open')) fecharAdmin();
-  // Clica na aba da categoria, igual ao usuário clicando na navbar
+  // Clica na aba da categoria e rola para baixo do hero
   setTimeout(function() {
     const navBtn = document.querySelector('.cat-btn[data-cat="' + _popupCategoriaDestino + '"]');
     if (navBtn) navBtn.click();
+    setTimeout(function() {
+      const produtos = document.getElementById('productSections');
+      if (produtos) produtos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
   }, 150);
 }
 
