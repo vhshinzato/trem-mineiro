@@ -132,7 +132,7 @@ export async function carregarDoSupabase() {
 
   if (cfgRow && cfgRow.dados) {
     var d = cfgRow.dados;
-    state.config = { whatsapp: d.whatsapp||WHATSAPP_DEFAULT, logo: d.logo||'', heroMedia: d.heroMedia||[] };
+    state.config = { whatsapp: d.whatsapp||WHATSAPP_DEFAULT, logo: d.logo||'', heroMedia: d.heroMedia||[], popup: d.popup||null };
   }
   if (!state.config.heroMedia) state.config.heroMedia = [];
 

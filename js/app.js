@@ -371,6 +371,7 @@ async function abrirAdmin() {
     document.getElementById('inputWhatsapp').value = state.config.whatsapp || WHATSAPP_DEFAULT;
     carregarPreviewLogoAdmin();
     renderHeroMediaLista();
+    carregarPainelPopup();
   }
 }
 
@@ -1171,6 +1172,133 @@ function carregarPreviewLogoAdmin() {
   aplicarLogo();
 }
 
+
+/* ============================================================
+   POPUP PROMOCIONAL
+============================================================ */
+var _popupCategoriaDestino = '';
+
+function mostrarPopupInicial() {
+  const popup = state.config.popup;
+  if (!popup || !popup.ativo) return;
+  if (sessionStorage.getItem('popup_visto')) return;
+  sessionStorage.setItem('popup_visto', '1');
+
+  const el = document.getElementById('popupPromocional');
+  const img = document.getElementById('popupImg');
+  const titulo = document.getElementById('popupTituloPublico');
+  const btn = document.getElementById('popupBotaoPublico');
+
+  img.src = popup.imagem || '';
+  img.style.display = popup.imagem ? 'block' : 'none';
+  titulo.textContent = popup.titulo || '';
+  _popupCategoriaDestino = popup.categoriaId || '';
+
+  if (popup.botaoTexto && popup.categoriaId) {
+    btn.textContent = popup.botaoTexto;
+    btn.style.display = '';
+  } else {
+    btn.style.display = 'none';
+  }
+
+  el.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharPopup() {
+  document.getElementById('popupPromocional').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function irParaCategoriaPopup() {
+  fecharPopup();
+  if (!_popupCategoriaDestino) return;
+  // Fecha admin se estiver aberto
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel && adminPanel.classList.contains('open')) fecharAdmin();
+  // Rola até a seção da categoria
+  setTimeout(function() {
+    filtrarPorCategoria(_popupCategoriaDestino);
+    const sec = document.getElementById('sec_' + _popupCategoriaDestino);
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ── Admin: carregar painel de popup ──────────────────────────
+function carregarPainelPopup() {
+  const popup = state.config.popup || {};
+  const chk = document.getElementById('popupAtivo');
+  if (!chk) return;
+  chk.checked = !!popup.ativo;
+  _atualizarTogglePopup(!!popup.ativo);
+  document.getElementById('popupTitulo').value = popup.titulo || '';
+  document.getElementById('popupBotaoTexto').value = popup.botaoTexto || '';
+
+  // Preview imagem
+  const prev = document.getElementById('popupImgPreview');
+  prev.innerHTML = popup.imagem
+    ? `<img src="${popup.imagem}" style="width:100%;height:100%;object-fit:cover;" />`
+    : '<span style="color:var(--cinza);font-size:.85rem;">Sem imagem</span>';
+
+  // Preenche select de categorias
+  const sel = document.getElementById('popupCategoriaId');
+  sel.innerHTML = '<option value="">— Só fechar —</option>';
+  state.categorias.forEach(function(cat) {
+    const opt = document.createElement('option');
+    opt.value = cat.id;
+    opt.textContent = cat.nome;
+    if (cat.id === (popup.categoriaId || '')) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function _atualizarTogglePopup(ativo) {
+  const slider = document.getElementById('popupAtivoSlider');
+  const label  = document.getElementById('popupAtivoLabel');
+  if (!slider) return;
+  slider.style.background = ativo ? 'var(--terra)' : 'var(--creme-dark)';
+  label.textContent = ativo ? 'Ativado' : 'Desativado';
+  label.style.color = ativo ? 'var(--terra)' : 'var(--cinza)';
+}
+
+function salvarConfigPopup() {
+  const ativo = document.getElementById('popupAtivo').checked;
+  _atualizarTogglePopup(ativo);
+  if (!state.config.popup) state.config.popup = {};
+  state.config.popup.ativo       = ativo;
+  state.config.popup.titulo      = document.getElementById('popupTitulo').value.trim();
+  state.config.popup.botaoTexto  = document.getElementById('popupBotaoTexto').value.trim();
+  state.config.popup.categoriaId = document.getElementById('popupCategoriaId').value;
+  persistir();
+}
+
+var _popupImgTemp = null;
+async function handlePopupImagem(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    _popupImgTemp = e.target.result;
+    document.getElementById('popupImgPreview').innerHTML =
+      `<img src="${_popupImgTemp}" style="width:100%;height:100%;object-fit:cover;" />`;
+    // Upload para Storage
+    try {
+      const url = await uploadImagemStorage(_popupImgTemp, 'popup', 'banner_' + Date.now());
+      if (!state.config.popup) state.config.popup = {};
+      state.config.popup.imagem = url;
+      persistir();
+    } catch(e) { console.error('Erro ao enviar imagem popup:', e); }
+  };
+  reader.readAsDataURL(file);
+}
+
+function removerPopupImagem() {
+  if (!state.config.popup) state.config.popup = {};
+  state.config.popup.imagem = '';
+  document.getElementById('popupImgPreview').innerHTML =
+    '<span style="color:var(--cinza);font-size:.85rem;">Sem imagem</span>';
+  persistir();
+}
 
 function abrirModal(id) {
   var el = document.getElementById(id);
@@ -4129,6 +4257,7 @@ async function inicializar() {
   aplicarLogo();
   iniciarCarrosselHero();
   atualizarBotaoCliente();
+  setTimeout(mostrarPopupInicial, 800); // pequeno delay para o site carregar antes da popup
 
   if (state.sessaoCliente) {
     document.getElementById('dropdownNome').textContent = state.sessaoCliente.nome;
@@ -4682,6 +4811,11 @@ if (typeof fazerLoginCliente !== "undefined") window.fazerLoginCliente = fazerLo
 if (typeof fazerLogout !== "undefined") window.fazerLogout = fazerLogout;
 if (typeof fecharCarrinho !== "undefined") window.fecharCarrinho = fecharCarrinho;
 if (typeof fecharModal !== "undefined") window.fecharModal = fecharModal;
+if (typeof fecharPopup !== "undefined") window.fecharPopup = fecharPopup;
+if (typeof irParaCategoriaPopup !== "undefined") window.irParaCategoriaPopup = irParaCategoriaPopup;
+if (typeof salvarConfigPopup !== "undefined") window.salvarConfigPopup = salvarConfigPopup;
+if (typeof handlePopupImagem !== "undefined") window.handlePopupImagem = handlePopupImagem;
+if (typeof removerPopupImagem !== "undefined") window.removerPopupImagem = removerPopupImagem;
 if (typeof filtrarPedidos !== "undefined") window.filtrarPedidos = filtrarPedidos;
 if (typeof atualizarPedidos !== "undefined") window.atualizarPedidos = atualizarPedidos;
 if (typeof filtrarPorCategoria !== "undefined") window.filtrarPorCategoria = filtrarPorCategoria;

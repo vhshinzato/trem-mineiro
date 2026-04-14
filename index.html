@@ -821,6 +821,49 @@
         </div>
 
       </div>
+
+      <!-- Card: Popup promocional -->
+      <div style="margin-top:1.4rem;max-width:780px;background:var(--branco);padding:1.8rem;border-radius:var(--radius);box-shadow:0 2px 10px var(--shadow);">
+        <p style="font-family:var(--font-serif);font-size:1.05rem;font-weight:800;color:var(--cafe);margin-bottom:1.2rem;">📣 Popup Promocional</p>
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;">
+          <label style="font-size:.9rem;font-weight:700;color:var(--cafe);">Ativar popup</label>
+          <label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;">
+            <input type="checkbox" id="popupAtivo" style="opacity:0;width:0;height:0;" onchange="salvarConfigPopup()">
+            <span style="position:absolute;inset:0;background:var(--creme-dark);border-radius:24px;cursor:pointer;transition:.3s;" id="popupAtivoSlider"></span>
+          </label>
+          <span id="popupAtivoLabel" style="font-size:.82rem;color:var(--cinza);">Desativado</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div>
+            <label class="form-label">Imagem da popup</label>
+            <div id="popupImgPreview" style="width:100%;height:120px;border:2px dashed var(--creme-dark);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:.5rem;background:var(--creme);">
+              <span style="color:var(--cinza);font-size:.85rem;">Sem imagem</span>
+            </div>
+            <input type="file" id="popupImgInput" accept="image/*" style="display:none;" onchange="handlePopupImagem(this)">
+            <div style="display:flex;gap:.5rem;">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('popupImgInput').click()">📁 Escolher</button>
+              <button class="btn btn-outline btn-sm" onclick="removerPopupImagem()">✕ Remover</button>
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label class="form-label">Título</label>
+              <input type="text" class="form-input" id="popupTitulo" placeholder="Ex: 🔥 Promoção especial!" oninput="salvarConfigPopup()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Texto do botão</label>
+              <input type="text" class="form-input" id="popupBotaoTexto" placeholder="Ex: Ver promoção" oninput="salvarConfigPopup()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Levar para categoria</label>
+              <select class="form-input" id="popupCategoriaId" onchange="salvarConfigPopup()">
+                <option value="">— Só fechar —</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ABA: USUÁRIOS -->
@@ -1369,6 +1412,21 @@
     <div class="confirm-actions">
       <button class="btn btn-secondary" onclick="fecharModal('confirmModal')">Cancelar</button>
       <button class="btn btn-danger" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP PROMOCIONAL -->
+<div class="modal-overlay" id="popupPromocional" style="display:none;z-index:9500;">
+  <div class="modal-box" style="max-width:420px;padding:0;overflow:hidden;border-radius:var(--radius);">
+    <button class="modal-close" onclick="fecharPopup()" style="position:absolute;top:.6rem;right:.6rem;z-index:1;background:rgba(0,0,0,.45);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    <img id="popupImg" src="" alt="Promoção" style="width:100%;display:block;max-height:320px;object-fit:cover;" onerror="this.style.display='none'" />
+    <div style="padding:1.2rem 1.4rem 1.4rem;">
+      <div id="popupTituloPublico" style="font-family:var(--font-serif);font-size:1.15rem;font-weight:800;color:var(--cafe);margin-bottom:1rem;"></div>
+      <div style="display:flex;gap:.6rem;">
+        <button class="btn btn-secondary" onclick="fecharPopup()" style="flex:1;">Fechar</button>
+        <button class="btn btn-primary" id="popupBotaoPublico" onclick="irParaCategoriaPopup()" style="flex:2;display:none;"></button>
+      </div>
     </div>
   </div>
 </div>
