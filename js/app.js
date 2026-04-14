@@ -3734,33 +3734,13 @@ function adicionarCompra() {
   mostrarToast('Compra registrada! ✓', 'success');
 }
 
-async function removerCompra(idxReversed) {
+function removerCompra(idxReversed) {
   const c = state.clientes.find(x => x.id === _clienteHistId);
   if (!c || !c.compras) return;
   const idxReal = c.compras.length - 1 - idxReversed;
   if (!c.compras[idxReal]) return;
-
-  // Remove do state
   c.compras.splice(idxReal, 1);
-
-  // Estratégia: apaga TODAS as compras do cliente no banco e re-insere as restantes.
-  // Evita problema de ID não bater (gerarId() vs chave real do banco).
-  const { error: delErr } = await sb.from('compras').delete().eq('cliente_id', c.id);
-  if (delErr) {
-    mostrarToast('Erro ao deletar: ' + delErr.message, 'error');
-    return;
-  }
-  if (c.compras.length > 0) {
-    const { error: insErr } = await sb.from('compras').insert(c.compras.map(cp => ({
-      id: cp.id, cliente_id: c.id,
-      data: cp.data, valor: cp.valor, produtos: cp.produtos || ''
-    })));
-    if (insErr) {
-      mostrarToast('Erro ao reinserir: ' + insErr.message, 'error');
-      return;
-    }
-  }
-
+  persistir(); // syncToSupabase() cuida de deletar compras removidas do state
   renderResumoHistoricoCliente(c);
   renderListaCompras(c);
   renderTabelaClientes();
