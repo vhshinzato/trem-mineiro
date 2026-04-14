@@ -1217,26 +1217,10 @@ function irParaCategoriaPopup() {
   // Fecha admin se estiver aberto
   const adminPanel = document.getElementById('adminPanel');
   if (adminPanel && adminPanel.classList.contains('open')) fecharAdmin();
-  // Mostra todos os produtos e rola até a seção da categoria
+  // Clica na aba da categoria, igual ao usuário clicando na navbar
   setTimeout(function() {
-    // Reseta o filtro para mostrar todas as seções
-    const todosBtn = document.querySelector('.cat-btn[data-cat=""]');
-    if (todosBtn) {
-      filtroAtivoCat = '';
-      renderCardapio('', '');
-      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      todosBtn.classList.add('active');
-    }
-    // Destaca a aba da categoria destino e rola até a seção
-    setTimeout(function() {
-      const navBtn = document.querySelector('.cat-btn[data-cat="' + _popupCategoriaDestino + '"]');
-      if (navBtn) {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        navBtn.classList.add('active');
-      }
-      const sec = document.getElementById('sec_' + _popupCategoriaDestino);
-      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 80);
+    const navBtn = document.querySelector('.cat-btn[data-cat="' + _popupCategoriaDestino + '"]');
+    if (navBtn) navBtn.click();
   }, 150);
 }
 
