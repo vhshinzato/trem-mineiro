@@ -1423,9 +1423,8 @@
     <img id="popupImg" src="" alt="Promoção" style="width:100%;display:block;max-height:320px;object-fit:cover;" onerror="this.style.display='none'" />
     <div style="padding:1.2rem 1.4rem 1.4rem;">
       <div id="popupTituloPublico" style="font-family:var(--font-serif);font-size:1.15rem;font-weight:800;color:var(--cafe);margin-bottom:1rem;"></div>
-      <div style="display:flex;gap:.6rem;">
-        <button class="btn btn-secondary" onclick="fecharPopup()" style="flex:1;">Fechar</button>
-        <button class="btn btn-primary" id="popupBotaoPublico" onclick="irParaCategoriaPopup()" style="flex:2;display:none;"></button>
+      <div id="popupBotaoWrap" style="display:none;">
+        <button class="btn btn-primary btn-full" id="popupBotaoPublico" onclick="irParaCategoriaPopup()"></button>
       </div>
     </div>
   </div>

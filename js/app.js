@@ -1194,11 +1194,12 @@ function mostrarPopupInicial() {
   titulo.textContent = popup.titulo || '';
   _popupCategoriaDestino = popup.categoriaId || '';
 
+  const btnWrap = document.getElementById('popupBotaoWrap');
   if (popup.botaoTexto && popup.categoriaId) {
     btn.textContent = popup.botaoTexto;
-    btn.style.display = '';
+    btnWrap.style.display = '';
   } else {
-    btn.style.display = 'none';
+    btnWrap.style.display = 'none';
   }
 
   el.style.display = 'flex';
