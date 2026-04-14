@@ -1217,12 +1217,27 @@ function irParaCategoriaPopup() {
   // Fecha admin se estiver aberto
   const adminPanel = document.getElementById('adminPanel');
   if (adminPanel && adminPanel.classList.contains('open')) fecharAdmin();
-  // Rola até a seção da categoria
+  // Mostra todos os produtos e rola até a seção da categoria
   setTimeout(function() {
-    filtrarPorCategoria(_popupCategoriaDestino);
-    const sec = document.getElementById('sec_' + _popupCategoriaDestino);
-    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
+    // Reseta o filtro para mostrar todas as seções
+    const todosBtn = document.querySelector('.cat-btn[data-cat=""]');
+    if (todosBtn) {
+      filtroAtivoCat = '';
+      renderCardapio('', '');
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      todosBtn.classList.add('active');
+    }
+    // Destaca a aba da categoria destino e rola até a seção
+    setTimeout(function() {
+      const navBtn = document.querySelector('.cat-btn[data-cat="' + _popupCategoriaDestino + '"]');
+      if (navBtn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        navBtn.classList.add('active');
+      }
+      const sec = document.getElementById('sec_' + _popupCategoriaDestino);
+      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }, 150);
 }
 
 // ── Admin: carregar painel de popup ──────────────────────────
@@ -1282,13 +1297,17 @@ async function handlePopupImagem(input) {
     _popupImgTemp = e.target.result;
     document.getElementById('popupImgPreview').innerHTML =
       `<img src="${_popupImgTemp}" style="width:100%;height:100%;object-fit:cover;" />`;
-    // Upload para Storage
+    mostrarToast('Enviando imagem…', 'success');
     try {
       const url = await uploadImagemStorage(_popupImgTemp, 'popup', 'banner_' + Date.now());
       if (!state.config.popup) state.config.popup = {};
       state.config.popup.imagem = url;
       persistir();
-    } catch(e) { console.error('Erro ao enviar imagem popup:', e); }
+      mostrarToast('Imagem salva! ✓', 'success');
+    } catch(e) {
+      console.error('Erro ao enviar imagem popup:', e);
+      mostrarToast('Erro ao enviar imagem: ' + (e.message || e), 'error');
+    }
   };
   reader.readAsDataURL(file);
 }
