@@ -1436,9 +1436,24 @@
     /* ============================================================
        BOTÃO FLUTUANTE DO CARRINHO
     ============================================================ */
-    #btnCarrinho {
+    #btnWhatsappFlutuante {
       position: fixed;
       bottom: 2rem;
+      right: 2rem;
+      width: 58px; height: 58px;
+      background: #25D366;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 24px rgba(37,211,102,.45);
+      z-index: 400;
+      text-decoration: none;
+      transition: transform var(--trans), box-shadow var(--trans), background var(--trans);
+    }
+    #btnWhatsappFlutuante:hover { transform: scale(1.1); box-shadow: 0 10px 30px rgba(37,211,102,.55); background: #1ebd5a; }
+
+    #btnCarrinho {
+      position: fixed;
+      bottom: 6.5rem;
       right: 2rem;
       width: 58px; height: 58px;
       background: var(--terra);

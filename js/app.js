@@ -251,6 +251,8 @@ function _pausarScrollSpy() {
 function atualizarWhatsapp() {
   const num = state.config.whatsapp || WHATSAPP_DEFAULT;
   document.getElementById('btnWhatsapp').href = `https://wa.me/${num}`;
+  const flut = document.getElementById('btnWhatsappFlutuante');
+  if (flut) flut.href = `https://wa.me/${num}`;
 }
 
 /* ============================================================
