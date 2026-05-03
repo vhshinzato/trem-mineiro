@@ -41,6 +41,11 @@
      ÁREA PÚBLICA
 ============================================================ -->
 
+<!-- FAIXA DE ÁREA DE ENTREGA -->
+<div id="faixaEntrega">
+  🚚 Entregamos apenas em São Paulo capital e cidades da Grande SP
+</div>
+
 <!-- HEADER -->
 <header id="header">
   <div class="header-inner">
@@ -264,7 +269,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">CEP</label>
-          <input type="text" class="form-input" id="authCadCep" placeholder="00000-000" maxlength="9" />
+          <input type="text" class="form-input" id="authCadCep" placeholder="00000-000" maxlength="9" onblur="autoPreencherEndereco('authCadCep','authCadRua','authCadCidade','authCadEstado')" />
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr auto;gap:.8rem;">
@@ -319,7 +324,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">CEP</label>
-        <input type="text" class="form-input" id="mdCep" placeholder="00000-000" maxlength="9" />
+        <input type="text" class="form-input" id="mdCep" placeholder="00000-000" maxlength="9" onblur="autoPreencherEndereco('mdCep','mdRua','mdCidade','mdEstado')" />
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr auto;gap:.8rem;">
@@ -1271,7 +1276,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">CEP</label>
-        <input type="text" class="form-input" id="clienteCep" placeholder="00000-000" maxlength="9" />
+        <input type="text" class="form-input" id="clienteCep" placeholder="00000-000" maxlength="9" onblur="autoPreencherEndereco('clienteCep','clienteRua','clienteCidade','clienteEstado')" />
       </div>
       <div class="form-group">
         <label class="form-label">Cidade</label>

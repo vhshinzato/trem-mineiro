@@ -43,6 +43,23 @@
     input, select, textarea { font-family: var(--font-sans); outline: none; }
 
     /* ============================================================
+       FAIXA DE ÁREA DE ENTREGA
+    ============================================================ */
+    #faixaEntrega {
+      background: var(--ouro);
+      color: var(--cafe);
+      text-align: center;
+      font-size: .85rem;
+      font-weight: 700;
+      padding: .55rem 1rem;
+      letter-spacing: .2px;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+    @media (max-width: 640px) {
+      #faixaEntrega { font-size: .75rem; padding: .5rem .8rem; }
+    }
+
+    /* ============================================================
        BARRA SUPERIOR (HEADER PÚBLICO)
     ============================================================ */
     #header {

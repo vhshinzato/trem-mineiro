@@ -51,6 +51,59 @@ function stringifyEndereco(rua, numero, cidade, estado, cep) {
 }
 
 /* ============================================================
+   ÁREA DE ENTREGA — VALIDAÇÃO POR CIDADE/CEP (ViaCEP)
+============================================================ */
+const CIDADES_ATENDIDAS = [
+  'sao paulo', 'sao caetano do sul', 'osasco', 'santo andre', 'diadema',
+  'guarulhos', 'taboao da serra', 'embu das artes', 'carapicuiba',
+  'sao bernardo do campo', 'maua', 'itapecerica da serra'
+];
+
+function _normalizarCidade(s) {
+  return (s||'').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .trim();
+}
+
+function cidadeAtendida(cidade, estado) {
+  if (!cidade) return false;
+  if (estado && estado.toUpperCase() !== 'SP') return false;
+  return CIDADES_ATENDIDAS.includes(_normalizarCidade(cidade));
+}
+
+async function consultarCep(cep) {
+  const limpo = (cep||'').replace(/\D/g, '');
+  if (limpo.length !== 8) return null;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
+    const data = await res.json();
+    if (data.erro) return null;
+    return {
+      rua: data.logradouro || '',
+      cidade: data.localidade || '',
+      estado: data.uf || '',
+      cep: data.cep || cep
+    };
+  } catch(e) {
+    console.error('Erro ao consultar CEP:', e);
+    return null;
+  }
+}
+
+async function autoPreencherEndereco(cepInputId, ruaInputId, cidadeInputId, estadoInputId) {
+  const cep = document.getElementById(cepInputId).value;
+  if ((cep||'').replace(/\D/g,'').length !== 8) return;
+  const dados = await consultarCep(cep);
+  if (!dados) return;
+  const rua    = document.getElementById(ruaInputId);
+  const cidade = document.getElementById(cidadeInputId);
+  const estado = document.getElementById(estadoInputId);
+  if (rua && !rua.value && dados.rua) rua.value = dados.rua;
+  if (cidade) cidade.value = dados.cidade;
+  if (estado) estado.value = dados.estado;
+}
+
+/* ============================================================
    RENDERIZAÇÃO DA ÁREA PÚBLICA
 ============================================================ */
 var _renderCardapioTimer = null;
@@ -2088,6 +2141,13 @@ async function finalizarPedido() {
     pedirLoginParaPedido();
     return;
   }
+  // Guarda de área de entrega
+  const endCli = parseEndereco(state.sessaoCliente.endereco);
+  if (!endCli.cidade || !cidadeAtendida(endCli.cidade, endCli.estado)) {
+    mostrarToast('Endereço fora da área de entrega. Atualize seus dados.', 'error');
+    abrirMeusDados();
+    return;
+  }
   _enviandoPedido = true;
 
   const num   = state.config.whatsapp || WHATSAPP_DEFAULT;
@@ -2315,11 +2375,13 @@ async function cadastrarCliente() {
   const senha = document.getElementById('authCadSenha').value;
   const tel   = document.getElementById('authCadTel').value.trim();
   const aniv  = document.getElementById('authCadAniv').value;
+  const cidadeIn = document.getElementById('authCadCidade').value.trim();
+  const estadoIn = document.getElementById('authCadEstado').value.trim().toUpperCase();
   const end   = stringifyEndereco(
     document.getElementById('authCadRua').value.trim(),
     document.getElementById('authCadNum').value.trim(),
-    document.getElementById('authCadCidade').value.trim(),
-    document.getElementById('authCadEstado').value.trim().toUpperCase(),
+    cidadeIn,
+    estadoIn,
     document.getElementById('authCadCep').value.trim()
   );
   let valido  = true;
@@ -2335,6 +2397,11 @@ async function cadastrarCliente() {
   }
   if (!senha || senha.length < 6) {
     document.getElementById('authCadSenhaErr').textContent = 'Senha deve ter pelo menos 6 caracteres.'; valido = false;
+  }
+  if (cidadeIn && !cidadeAtendida(cidadeIn, estadoIn)) {
+    document.getElementById('authCadAlert').innerHTML =
+      `<div style="background:#fdecea;color:#7f1d1d;padding:.6rem .8rem;border-radius:6px;font-size:.82rem;font-weight:600;border-left:3px solid #c0392b;">⚠️ Desculpe, ainda não fazemos entregas para <strong>${escapeHtml(cidadeIn)}</strong>. Entregamos para São Paulo capital e cidades da Grande SP em raio de ~20km.</div>`;
+    valido = false;
   }
   if (!valido) return;
 
@@ -2408,17 +2475,25 @@ async function salvarMeusDados() {
   const nome  = document.getElementById('mdNome').value.trim();
   const tel   = document.getElementById('mdTel').value.trim();
   const aniv  = document.getElementById('mdAniv').value;
+  const cidadeIn = document.getElementById('mdCidade').value.trim();
+  const estadoIn = document.getElementById('mdEstado').value.trim().toUpperCase();
   const end   = stringifyEndereco(
     document.getElementById('mdRua').value.trim(),
     document.getElementById('mdNum').value.trim(),
-    document.getElementById('mdCidade').value.trim(),
-    document.getElementById('mdEstado').value.trim().toUpperCase(),
+    cidadeIn,
+    estadoIn,
     document.getElementById('mdCep').value.trim()
   );
   const senha = document.getElementById('mdSenha').value;
 
   document.getElementById('mdNomeErr').textContent = '';
+  document.getElementById('meusDadosAlert').innerHTML = '';
   if (!nome) { document.getElementById('mdNomeErr').textContent = 'Nome obrigatório.'; return; }
+  if (cidadeIn && !cidadeAtendida(cidadeIn, estadoIn)) {
+    document.getElementById('meusDadosAlert').innerHTML =
+      `<div style="background:#fdecea;color:#7f1d1d;padding:.6rem .8rem;border-radius:6px;font-size:.82rem;font-weight:600;border-left:3px solid #c0392b;">⚠️ Desculpe, ainda não fazemos entregas para <strong>${escapeHtml(cidadeIn)}</strong>. Entregamos para São Paulo capital e cidades da Grande SP em raio de ~20km.</div>`;
+    return;
+  }
 
   // Atualiza na sessão (sempre disponível)
   state.sessaoCliente.nome        = nome;
@@ -4832,6 +4907,7 @@ if (typeof adicionarHeroUrl !== "undefined") window.adicionarHeroUrl = adicionar
 if (typeof ajusteDigitado !== "undefined") window.ajusteDigitado = ajusteDigitado;
 if (typeof ajusteRapido !== "undefined") window.ajusteRapido = ajusteRapido;
 if (typeof aplicarFiltroIntervalo !== "undefined") window.aplicarFiltroIntervalo = aplicarFiltroIntervalo;
+if (typeof autoPreencherEndereco !== "undefined") window.autoPreencherEndereco = autoPreencherEndereco;
 if (typeof cadastrarCliente !== "undefined") window.cadastrarCliente = cadastrarCliente;
 if (typeof cancelarPedido !== "undefined") window.cancelarPedido = cancelarPedido;
 if (typeof deletarPedido !== "undefined") window.deletarPedido = deletarPedido;
